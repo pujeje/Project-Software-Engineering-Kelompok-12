@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tambah Transaksi - FinTrack</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<header>
+    <h1>💰 FinTrack</h1>
+    <p>Kelola keuanganmu dengan mudah</p>
+</header>
+
+<main>
+    <div class="card form-card">
+        <h2>Tambah Transaksi</h2>
+
+        <form method="POST" action="/add">
+
+            <div class="form-group">
+                <label>Judul Transaksi</label>
+                <input type="text" name="title" placeholder="Contoh: Beli makan siang" required>
+            </div>
+
+            <div class="form-group">
+                <label>Jumlah (Rp)</label>
+                <input type="number" name="amount" placeholder="Contoh: 25000" min="0" required>
+            </div>
+
+            <div class="form-group">
+                <label>Tanggal</label>
+                <input type="date" name="date" value="{{ today }}">
+            </div>
+
+            <div class="form-group">
+                <label>Tipe</label>
+                <select name="type">
+                    <option value="expense">Pengeluaran</option>
+                    <option value="income">Pemasukan</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Kategori</label>
+                <select name="category">
+                    <option value="Makanan">Makanan</option>
+                    <option value="Transport">Transport</option>
+                    <option value="Belanja">Belanja</option>
+                    <option value="Hiburan">Hiburan</option>
+                    <option value="Kesehatan">Kesehatan</option>
+                    <option value="Pendidikan">Pendidikan</option>
+                    <option value="Gaji">Gaji</option>
+                    <option value="Lainnya">Lainnya</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Catatan (opsional)</label>
+                <textarea name="note" placeholder="Tambahkan catatan..."></textarea>
+            </div>
+
+            <div class="form-actions">
+                <a href="/" class="btn btn-secondary">Batal</a>
+                <button type="submit" class="btn btn-primary">Simpan</button>
+            </div>
+
+        </form>
+    </div>
+</main>
+
+</body>
+</html>

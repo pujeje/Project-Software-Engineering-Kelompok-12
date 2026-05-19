@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Transaksi - FinTrack</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<header>
+    <h1>💰 FinTrack</h1>
+    <p>Kelola keuanganmu dengan mudah</p>
+</header>
+
+<nav class="navbar">
+    <a href="/">🏠 Beranda</a>
+    <a href="/report">📊 Laporan</a>
+</nav>
+
+<main>
+    <div class="card form-card">
+        <h2>Edit Transaksi</h2>
+
+        <form method="POST" action="/edit/{{ transaction.id }}">
+
+            <div class="form-group">
+                <label>Judul Transaksi</label>
+                <input type="text" name="title"
+                       value="{{ transaction.title }}" required>
+            </div>
+
+            <div class="form-group">
+                <label>Jumlah (Rp)</label>
+                <input type="number" name="amount"
+                       value="{{ transaction.amount | int }}" min="0" required>
+            </div>
+
+            <div class="form-group">
+                <label>Tanggal</label>
+                <input type="date" name="date"
+                       value="{{ transaction.date.strftime('%Y-%m-%d') }}">
+            </div>
+
+            <div class="form-group">
+                <label>Tipe</label>
+                <select name="type">
+                    <option value="expense" {{ 'selected' if transaction.type == 'expense' }}>Pengeluaran</option>
+                    <option value="income"  {{ 'selected' if transaction.type == 'income'  }}>Pemasukan</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Kategori</label>
+                <select name="category">
+                    {% set categories = ['Makanan','Transport','Belanja','Hiburan','Kesehatan','Pendidikan','Gaji','Lainnya'] %}
+                    {% for cat in categories %}
+                        <option value="{{ cat }}" {{ 'selected' if transaction.category == cat }}>{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Catatan (opsional)</label>
+                <textarea name="note">{{ transaction.note }}</textarea>
+            </div>
+
+            <div class="form-actions">
+                <a href="/" class="btn btn-secondary">Batal</a>
+                <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+            </div>
+
+        </form>
+    </div>
+</main>
+
+</body>
+</html>

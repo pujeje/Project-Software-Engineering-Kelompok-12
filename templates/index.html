@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinTrack</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<header>
+    <h1>💰 FinTrack</h1>
+    <p>Kelola keuanganmu dengan mudah</p>
+</header>
+
+<nav class="navbar">
+    <a href="/" class="active">🏠 Beranda</a>
+    <a href="/report">📊 Laporan</a>
+    <a href="{{ url_for('scan') }}">📷 Scan Struk</a>
+</nav>
+
+<main>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Kartu Ringkasan -->
+    <div class="summary-grid">
+        <div class="card summary-card income">
+            <p class="label">Total Pemasukan</p>
+            <p class="amount">Rp {{ "{:,.0f}".format(total_income) }}</p>
+        </div>
+        <div class="card summary-card expense">
+            <p class="label">Total Pengeluaran</p>
+            <p class="amount">Rp {{ "{:,.0f}".format(total_expense) }}</p>
+        </div>
+        <div class="card summary-card balance">
+            <p class="label">Saldo</p>
+            <p class="amount">Rp {{ "{:,.0f}".format(balance) }}</p>
+        </div>
+    </div>
+
+    <!-- Tombol Tambah -->
+    <div class="action-bar">
+        <a href="/add" class="btn btn-primary">+ Tambah Transaksi</a>
+    </div>
+
+    <!-- Tabel Riwayat -->
+    <div class="card">
+        <h2>Riwayat Transaksi</h2>
+        {% if transactions %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Tanggal</th>
+                    <th>Judul</th>
+                    <th>Kategori</th>
+                    <th>Tipe</th>
+                    <th>Jumlah</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in transactions %}
+                <tr>
+                    <td>{{ t.date.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ t.title }}</td>
+                    <td>{{ t.category }}</td>
+                    <td>
+                        <span class="badge {{ 'badge-income' if t.type == 'income' else 'badge-expense' }}">
+                            {{ 'Pemasukan' if t.type == 'income' else 'Pengeluaran' }}
+                        </span>
+                    </td>
+                    <td class="{{ 'text-income' if t.type == 'income' else 'text-expense' }}">
+                        Rp {{ "{:,.0f}".format(t.amount) }}
+                    </td>
+                    <td style="display: flex; gap: 8px;">
+                        <a href="/edit/{{ t.id }}" class="btn btn-edit">Edit</a>
+                        <a href="/delete/{{ t.id }}" class="btn btn-danger"
+                        onclick="return confirm('Yakin mau hapus?')">Hapus</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <p class="empty-msg">Belum ada transaksi. Tambahkan yang pertama!</p>
+        {% endif %}
+    </div>
+
+</main>
+
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan - FinTrack</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+</head>
+<body>
+
+<header>
+    <h1>💰 FinTrack</h1>
+    <p>Kelola keuanganmu dengan mudah</p>
+</header>
+
+<nav class="navbar">
+    <a href="/">🏠 Beranda</a>
+    <a href="/report" class="active">📊 Laporan</a>
+    <a href="{{ url_for('scan') }}">📷 Scan Struk</a>
+</nav>
+
+<main>
+
+    <!-- Ringkasan -->
+    <div class="summary-grid">
+        <div class="card summary-card income">
+            <p class="label">Total Pemasukan</p>
+            <p class="amount">Rp {{ "{:,.0f}".format(total_income) }}</p>
+        </div>
+        <div class="card summary-card expense">
+            <p class="label">Total Pengeluaran</p>
+            <p class="amount">Rp {{ "{:,.0f}".format(total_expense) }}</p>
+        </div>
+        <div class="card summary-card balance">
+            <p class="label">Saldo</p>
+            <p class="amount">Rp {{ "{:,.0f}".format(balance) }}</p>
+        </div>
+    </div>
+
+    <div class="chart-grid">
+
+        <!-- Grafik Donut: Pengeluaran per Kategori -->
+        <div class="card">
+            <h2>Pengeluaran per Kategori</h2>
+            {% if category_data %}
+                <canvas id="categoryChart"></canvas>
+            {% else %}
+                <p class="empty-msg">Belum ada data pengeluaran.</p>
+            {% endif %}
+        </div>
+
+        <!-- Grafik Bar: Pemasukan vs Pengeluaran -->
+        <div class="card">
+            <h2>Pemasukan vs Pengeluaran</h2>
+            {% if monthly_data %}
+                <canvas id="monthlyChart"></canvas>
+            {% else %}
+                <p class="empty-msg">Belum ada data transaksi.</p>
+            {% endif %}
+        </div>
+
+    </div>
+
+</main>
+
+<script>
+    // Data dari Flask
+    const categoryLabels = {{ category_data.keys() | list | tojson }};
+    const categoryValues = {{ category_data.values() | list | tojson }};
+    const monthlyLabels  = {{ monthly_data.keys()  | list | tojson }};
+    const monthlyIncome  = {{ monthly_data.values() | map(attribute='income')  | list | tojson }};
+    const monthlyExpense = {{ monthly_data.values() | map(attribute='expense') | list | tojson }};
+
+    // Donut chart
+    if (categoryLabels.length > 0) {
+        new Chart(document.getElementById('categoryChart'), {
+            type: 'doughnut',
+            data: {
+                labels: categoryLabels,
+                datasets: [{
+                    data: categoryValues,
+                    backgroundColor: [
+                        '#2d6a4f','#52b788','#95d5b2',
+                        '#dc2626','#f87171','#fca5a5',
+                        '#1d4ed8','#60a5fa'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    }
+
+    // Bar chart
+    if (monthlyLabels.length > 0) {
+        new Chart(document.getElementById('monthlyChart'), {
+            type: 'bar',
+            data: {
+                labels: monthlyLabels,
+                datasets: [
+                    {
+                        label: 'Pemasukan',
+                        data: monthlyIncome,
+                        backgroundColor: '#52b788'
+                    },
+                    {
+                        label: 'Pengeluaran',
+                        data: monthlyExpense,
+                        backgroundColor: '#f87171'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: value => 'Rp ' + value.toLocaleString('id-ID')
+                        }
+                    }
+                }
+            }
+        });
+    }
+</script>
+
+</body>
+</html>
