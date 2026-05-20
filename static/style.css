@@ -159,3 +159,98 @@ td { padding: 12px; border-bottom: 1px solid #f3f4f6; }
     padding: 5px 12px;
 }
 .btn-edit:hover { background: #dbeafe; }
+
+/* Auth pages */
+.auth-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: #f0f4f8;
+}
+.auth-container {
+    width: 100%;
+    max-width: 420px;
+    padding: 20px;
+}
+.auth-card {
+    background: white;
+    border-radius: 16px;
+    padding: 36px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+.auth-header {
+    text-align: center;
+    margin-bottom: 28px;
+}
+.auth-header h1 {
+    font-size: 28px;
+    color: #2d6a4f;
+    margin-bottom: 6px;
+}
+.auth-header p {
+    color: #666;
+    font-size: 14px;
+}
+.auth-switch {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 13px;
+    color: #666;
+}
+.auth-switch a {
+    color: #2d6a4f;
+    font-weight: 500;
+    text-decoration: none;
+}
+.auth-switch a:hover { text-decoration: underline; }
+
+/* Budget */
+.budget-card { padding: 20px 24px; }
+.budget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+.budget-header h3 { font-size: 16px; color: #2d6a4f; margin-bottom: 4px; }
+.budget-sub { font-size: 13px; color: #666; }
+.budget-footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #666;
+    margin-top: 8px;
+}
+
+/* Progress bar */
+.progress-bar-bg {
+    width: 100%;
+    height: 10px;
+    background: #e5e7eb;
+    border-radius: 99px;
+    overflow: hidden;
+}
+.progress-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.4s ease;
+}
+.fill-safe    { background: #2d6a4f; }
+.fill-warning { background: #f59e0b; }
+.fill-danger  { background: #dc2626; }
+
+/* Budget alert */
+.budget-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 18px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+}
+.budget-alert strong { display: block; margin-bottom: 2px; font-size: 14px; }
+.budget-alert p { font-size: 13px; margin: 0; }
+.budget-icon { font-size: 22px; }
+.budget-danger  { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+.budget-warning { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
