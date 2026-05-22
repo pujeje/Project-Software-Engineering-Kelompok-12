@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Transaksi Grup - FinTrack</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header>
+    <h1>💰 FinTrack</h1>
+    <p>Mode Sharing — {{ group.name }}</p>
+</header>
+<nav class="navbar">
+    <a href="/">🏠 Beranda</a>
+    <a href="/groups">👥 Sharing</a>
+    <a href="/groups/{{ group.id }}">← {{ group.name }}</a>
+    <span style="margin-left:auto; font-size:13px; color:#666;">
+        👤 {{ current_user.name }}
+    </span>
+    <a href="/logout" class="btn btn-danger" style="padding:5px 14px;">Logout</a>
+</nav>
+<main>
+    <div class="card form-card">
+        <h2>Edit Transaksi Grup</h2>
+        <p style="font-size:13px; color:#888; margin-bottom:20px;">
+            Diedit oleh: {{ current_user.name }}
+        </p>
+
+        <form method="POST" action="/groups/{{ group.id }}/edit/{{ transaction.id }}">
+            <div class="form-group">
+                <label>Judul</label>
+                <input type="text" name="title"
+                       value="{{ transaction.title }}" required>
+            </div>
+            <div class="form-group">
+                <label>Jumlah (Rp)</label>
+                <input type="number" name="amount"
+                       value="{{ transaction.amount | int }}" min="0" required>
+            </div>
+            <div class="form-group">
+                <label>Tanggal</label>
+                <input type="date" name="date"
+                       value="{{ transaction.date.strftime('%Y-%m-%d') }}">
+            </div>
+            <div class="form-group">
+                <label>Tipe</label>
+                <select name="type">
+                    <option value="expense"
+                        {{ 'selected' if transaction.type == 'expense' }}>
+                        Pengeluaran
+                    </option>
+                    <option value="income"
+                        {{ 'selected' if transaction.type == 'income' }}>
+                        Pemasukan
+                    </option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Kategori</label>
+                <select name="category">
+                    {% for cat in ['Makanan','Transport','Belanja','Hiburan',
+                                   'Kesehatan','Pendidikan','Lainnya'] %}
+                    <option value="{{ cat }}"
+                        {{ 'selected' if transaction.category == cat }}>
+                        {{ cat }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Dana / Pos Keuangan (opsional)</label>
+                <select name="fund_id">
+                    <option value="">— Tidak ada —</option>
+                    {% for fund in funds %}
+                    <option value="{{ fund.id }}"
+                        {{ 'selected' if transaction.fund_id == fund.id }}>
+                        {{ fund.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Catatan</label>
+                <input type="text" name="note"
+                       value="{{ transaction.note or '' }}">
+            </div>
+            <div class="form-actions">
+                <a href="/groups/{{ group.id }}" class="btn btn-secondary">Batal</a>
+                <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+            </div>
+        </form>
+    </div>
+</main>
+</body>
+</html>

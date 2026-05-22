@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scan Struk Split - {{ group.name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header>
+    <h1>💰 FinTrack</h1>
+    <p>Mode Sharing — {{ group.name }}</p>
+</header>
+<nav class="navbar">
+    <a href="/">🏠 Beranda</a>
+    <a href="/groups">👥 Sharing</a>
+    <a href="/groups/{{ group.id }}">← {{ group.name }}</a>
+    <a href="/groups/{{ group.id }}/split">🧾 Split Tagihan</a>
+    <span style="margin-left:auto; font-size:13px; color:#666;">
+        👤 {{ current_user.name }}
+    </span>
+    <a href="/logout" class="btn btn-danger" style="padding:5px 14px;">Logout</a>
+</nav>
+<main>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}{% endif %}
+    {% endwith %}
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+
+        <!-- Form Upload -->
+        <div class="card">
+            <h2>📷 Scan Struk untuk Split</h2>
+            <p style="font-size:13px; color:#666; margin:8px 0 20px;">
+                Upload foto struk, total akan otomatis terdeteksi
+                lalu bisa langsung dibagi ke anggota grup.
+            </p>
+
+            <form method="POST"
+                  action="/groups/{{ group.id }}/split/scan"
+                  enctype="multipart/form-data">
+
+                <div class="form-group">
+                    <label>Upload Foto Struk</label>
+                    <input type="file" name="receipt"
+                           accept="image/*" required
+                           onchange="previewImage(this)">
+                </div>
+
+                <!-- Preview -->
+                <div id="preview-box" style="display:none; margin-bottom:16px;">
+                    <img id="preview-img" src=""
+                         style="max-width:100%; max-height:260px;
+                                border-radius:8px;
+                                border:1px solid #e5e7eb;">
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width:100%;">
+                    🔍 Scan Struk
+                </button>
+            </form>
+        </div>
+
+        <!-- Hasil Scan + Form Split -->
+        <div class="card">
+            {% if result %}
+            <h2>✅ Hasil Scan — Atur Split</h2>
+            <p style="font-size:13px; color:#666; margin:8px 0 20px;">
+                Cek data hasil scan, lalu pilih cara bagi dan anggotanya.
+            </p>
+
+            <form method="POST" action="/groups/{{ group.id }}/split/create">
+
+                <div class="form-group">
+                    <label>Judul Tagihan</label>
+                    <input type="text" name="title"
+                           value="{{ result.title }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Total Tagihan (Rp)</label>
+                    <input type="number" name="total_amount"
+                           id="total-amount"
+                           value="{{ result.amount }}"
+                           min="0" oninput="updateEqual()" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Catatan (item terdeteksi)</label>
+                    <input type="text" name="note"
+                           value="{{ result.note }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Cara Bagi</label>
+                    <select name="split_type" id="split-type"
+                            onchange="toggleSplitType()">
+                        <option value="equal">Rata (dibagi sama)</option>
+                        <option value="custom">Custom (tiap orang beda)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Pilih Anggota</label>
+                    <div style="display:flex; flex-direction:column;
+                                gap:8px; margin-top:4px;">
+                        {% for m in members %}
+                        <div style="display:flex; align-items:center;
+                                    justify-content:space-between;
+                                    padding:10px 12px;
+                                    border:0.5px solid var(--color-border-tertiary);
+                                    border-radius:8px;">
+                            <label style="display:flex; align-items:center;
+                                          gap:8px; cursor:pointer; font-weight:400;">
+                                <input type="checkbox"
+                                       name="member_ids"
+                                       value="{{ m.user_id }}"
+                                       onchange="updateEqual()"
+                                       {{ 'checked' if m.user_id == current_user.id }}>
+                                {{ m.user.name }}
+                                {% if m.user_id == current_user.id %}
+                                <span style="font-size:11px; color:#888;">(kamu)</span>
+                                {% endif %}
+                            </label>
+
+                            <!-- Custom input -->
+                            <div class="custom-input" style="display:none;">
+                                <input type="number"
+                                       name="custom_{{ m.user_id }}"
+                                       placeholder="Jumlah (Rp)"
+                                       min="0"
+                                       style="width:130px; padding:6px 10px;
+                                              border:0.5px solid #d1d5db;
+                                              border-radius:6px; font-size:13px;">
+                            </div>
+
+                            <!-- Equal info -->
+                            <span class="equal-info"
+                                  style="font-size:13px; color:#2d6a4f;
+                                         font-weight:500;">
+                                Rp 0
+                            </span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:10px; margin-top:8px;">
+                    <a href="/groups/{{ group.id }}/split/scan"
+                       class="btn btn-secondary" style="flex:1; text-align:center;">
+                        📷 Scan Ulang
+                    </a>
+                    <button type="submit" class="btn btn-primary" style="flex:2;">
+                        Buat Split Tagihan
+                    </button>
+                </div>
+
+            </form>
+
+            {% else %}
+            <!-- Belum scan -->
+            <div style="text-align:center; padding:40px 20px;">
+                <p style="font-size:40px; margin-bottom:16px;">📷</p>
+                <p style="color:#666; font-size:14px;">
+                    Upload foto struk di sebelah kiri,<br>
+                    hasil scan akan muncul di sini.
+                </p>
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+</main>
+
+<script>
+function previewImage(input) {
+    const box = document.getElementById('preview-box');
+    const img = document.getElementById('preview-img');
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            img.src = e.target.result;
+            box.style.display = 'block';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function toggleSplitType() {
+    const type    = document.getElementById('split-type').value;
+    const customs = document.querySelectorAll('.custom-input');
+    const equals  = document.querySelectorAll('.equal-info');
+
+    if (type === 'custom') {
+        customs.forEach(el => el.style.display = 'block');
+        equals.forEach(el  => el.style.display  = 'none');
+    } else {
+        customs.forEach(el => el.style.display = 'none');
+        equals.forEach(el  => el.style.display  = 'inline');
+        updateEqual();
+    }
+}
+
+function updateEqual() {
+    const total   = parseFloat(document.getElementById('total-amount').value) || 0;
+    const checked = document.querySelectorAll('input[name="member_ids"]:checked');
+    const count   = checked.length;
+    const each    = count > 0 ? total / count : 0;
+
+    document.querySelectorAll('.equal-info').forEach(el => {
+        el.textContent = 'Rp ' + each.toLocaleString('id-ID',
+            { maximumFractionDigits: 0 });
+    });
+}
+
+updateEqual();
+</script>
+</body>
+</html>

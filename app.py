@@ -8,6 +8,7 @@ import re
 from PIL import Image
 import pytesseract
 from flask_migrate import Migrate
+import secrets
 
 
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
@@ -371,7 +372,528 @@ def get_budget_status(user_id):
         'status'       : status,
         'message'      : message
     }
+class Group(db.Model):
+    id         = db.Column(db.Integer, primary_key=True)
+    name       = db.Column(db.String(100), nullable=False)
+    code       = db.Column(db.String(8), unique=True, nullable=False)
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    members    = db.relationship('GroupMember', backref='group', lazy=True)
+    funds      = db.relationship('GroupFund', backref='group', lazy=True)
+    logs       = db.relationship('ActivityLog', backref='group', lazy=True)
 
+class GroupMember(db.Model):
+    id       = db.Column(db.Integer, primary_key=True)
+    group_id = db.Column(db.Integer, db.ForeignKey('group.id'), nullable=False)
+    user_id  = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    role     = db.Column(db.String(10), default='member')  # 'admin' atau 'member'
+    joined_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user     = db.relationship('User', backref='group_memberships')
+
+class GroupFund(db.Model):
+    id          = db.Column(db.Integer, primary_key=True)
+    group_id    = db.Column(db.Integer, db.ForeignKey('group.id'), nullable=False)
+    name        = db.Column(db.String(100), nullable=False)
+    target      = db.Column(db.Float, default=0)
+    description = db.Column(db.String(200), nullable=True)
+    created_at  = db.Column(db.DateTime, default=datetime.utcnow)
+
+class GroupTransaction(db.Model):
+    id          = db.Column(db.Integer, primary_key=True)
+    group_id    = db.Column(db.Integer, db.ForeignKey('group.id'), nullable=False)
+    fund_id     = db.Column(db.Integer, db.ForeignKey('group_fund.id'), nullable=True)
+    user_id     = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    title       = db.Column(db.String(100), nullable=False)
+    amount      = db.Column(db.Float, nullable=False)
+    category    = db.Column(db.String(50), nullable=False)
+    type        = db.Column(db.String(10), nullable=False)
+    date        = db.Column(db.DateTime, default=datetime.utcnow)
+    note        = db.Column(db.String(200), nullable=True)
+    user        = db.relationship('User', backref='group_transactions')
+    fund        = db.relationship('GroupFund', backref='transactions')
+
+class ActivityLog(db.Model):
+    id         = db.Column(db.Integer, primary_key=True)
+    group_id   = db.Column(db.Integer, db.ForeignKey('group.id'), nullable=False)
+    user_id    = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    action     = db.Column(db.String(200), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user       = db.relationship('User', backref='activity_logs')
+
+def log_activity(group_id, user_id, action):
+    log = ActivityLog(group_id=group_id, user_id=user_id, action=action)
+    db.session.add(log)
+    db.session.commit()
+    
+class SplitBill(db.Model):
+    id             = db.Column(db.Integer, primary_key=True)
+    group_id       = db.Column(db.Integer, db.ForeignKey('group.id'), nullable=False)
+    created_by     = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    title          = db.Column(db.String(100), nullable=False)
+    total_amount   = db.Column(db.Float, nullable=False)
+    note           = db.Column(db.String(200), nullable=True)
+    created_at     = db.Column(db.DateTime, default=datetime.utcnow)
+    splits         = db.relationship('SplitDetail', backref='bill', lazy=True)
+    creator        = db.relationship('User', backref='split_bills')
+
+class SplitDetail(db.Model):
+    id          = db.Column(db.Integer, primary_key=True)
+    bill_id     = db.Column(db.Integer, db.ForeignKey('split_bill.id'), nullable=False)
+    user_id     = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    amount      = db.Column(db.Float, nullable=False)
+    is_paid     = db.Column(db.Boolean, default=False)
+    paid_at     = db.Column(db.DateTime, nullable=True)
+    user        = db.relationship('User', backref='split_details')
+
+@app.route('/groups')
+@login_required
+def groups():
+    memberships = GroupMember.query.filter_by(user_id=current_user.id).all()
+    my_groups   = [m.group for m in memberships]
+    return render_template('groups.html', groups=my_groups)
+
+@app.route('/groups/create', methods=['POST'])
+@login_required
+def create_group():
+    name = request.form['name']
+    code = secrets.token_hex(4).upper()  # Kode unik 8 karakter
+
+    new_group = Group(name=name, code=code, created_by=current_user.id)
+    db.session.add(new_group)
+    db.session.flush()
+
+    # Pembuat otomatis jadi admin
+    member = GroupMember(group_id=new_group.id, user_id=current_user.id, role='admin')
+    db.session.add(member)
+    db.session.commit()
+
+    log_activity(new_group.id, current_user.id, f'membuat grup "{name}"')
+    flash(f'Grup "{name}" berhasil dibuat! Kode: {code}', 'success')
+    return redirect(url_for('group_detail', group_id=new_group.id))
+
+@app.route('/groups/join', methods=['POST'])
+@login_required
+def join_group():
+    code  = request.form['code'].strip().upper()
+    group = Group.query.filter_by(code=code).first()
+
+    if not group:
+        flash('Kode grup tidak ditemukan!', 'danger')
+        return redirect(url_for('groups'))
+
+    already = GroupMember.query.filter_by(group_id=group.id, user_id=current_user.id).first()
+    if already:
+        flash('Kamu sudah bergabung di grup ini!', 'warning')
+        return redirect(url_for('group_detail', group_id=group.id))
+
+    member = GroupMember(group_id=group.id, user_id=current_user.id, role='member')
+    db.session.add(member)
+    db.session.commit()
+
+    log_activity(group.id, current_user.id, f'bergabung ke grup')
+    flash(f'Berhasil bergabung ke grup "{group.name}"!', 'success')
+    return redirect(url_for('group_detail', group_id=group.id))
+
+@app.route('/groups/<int:group_id>')
+@login_required
+def group_detail(group_id):
+    group  = Group.query.get_or_404(group_id)
+    member = GroupMember.query.filter_by(group_id=group_id, user_id=current_user.id).first()
+    if not member:
+        flash('Kamu bukan anggota grup ini!', 'danger')
+        return redirect(url_for('groups'))
+
+    transactions = GroupTransaction.query.filter_by(group_id=group_id)\
+                                   .order_by(GroupTransaction.date.desc()).all()
+    funds = GroupFund.query.filter_by(group_id=group_id).all()
+    logs  = ActivityLog.query.filter_by(group_id=group_id)\
+                       .order_by(ActivityLog.created_at.desc()).limit(20).all()
+
+    total_income  = sum(t.amount for t in transactions if t.type == 'income')
+    total_expense = sum(t.amount for t in transactions if t.type == 'expense')
+    balance       = total_income - total_expense
+
+    return render_template('group_detail.html',
+                           group=group,
+                           member=member,
+                           transactions=transactions,
+                           funds=funds,
+                           logs=logs,
+                           total_income=total_income,
+                           total_expense=total_expense,
+                           balance=balance,
+                           now=datetime.utcnow())
+
+@app.route('/groups/<int:group_id>/add', methods=['POST'])
+@login_required
+def add_group_transaction(group_id):
+    group  = Group.query.get_or_404(group_id)
+    member = GroupMember.query.filter_by(group_id=group_id, user_id=current_user.id).first()
+    if not member:
+        flash('Kamu bukan anggota grup ini!', 'danger')
+        return redirect(url_for('groups'))
+
+    title    = request.form['title']
+    amount   = float(request.form['amount'])
+    category = request.form['category']
+    tipe     = request.form['type']
+    note     = request.form.get('note', '')
+    fund_id  = request.form.get('fund_id') or None
+    date_str = request.form.get('date', '')
+
+    tanggal = datetime.strptime(date_str, '%Y-%m-%d') if date_str else datetime.utcnow()
+
+    t = GroupTransaction(
+        group_id=group_id, fund_id=fund_id, user_id=current_user.id,
+        title=title, amount=amount, category=category,
+        type=tipe, note=note, date=tanggal
+    )
+    db.session.add(t)
+    db.session.commit()
+
+    log_activity(group_id, current_user.id,
+                 f'menambahkan transaksi "{title}" Rp {amount:,.0f}')
+    flash('Transaksi grup berhasil ditambahkan!', 'success')
+    return redirect(url_for('group_detail', group_id=group_id))
+
+@app.route('/groups/<int:group_id>/fund/add', methods=['POST'])
+@login_required
+def add_fund(group_id):
+    name        = request.form['fund_name']
+    target      = float(request.form.get('fund_target', 0))
+    description = request.form.get('fund_desc', '')
+
+    fund = GroupFund(group_id=group_id, name=name,
+                     target=target, description=description)
+    db.session.add(fund)
+    db.session.commit()
+
+    log_activity(group_id, current_user.id, f'membuat dana "{name}"')
+    flash(f'Dana "{name}" berhasil dibuat!', 'success')
+    return redirect(url_for('group_detail', group_id=group_id))
+
+@app.route('/groups/<int:group_id>/delete/<int:trans_id>')
+@login_required
+def delete_group_transaction(group_id, trans_id):
+    t = GroupTransaction.query.filter_by(id=trans_id, group_id=group_id).first_or_404()
+    log_activity(group_id, current_user.id,
+                 f'menghapus transaksi "{t.title}" Rp {t.amount:,.0f}')
+    db.session.delete(t)
+    db.session.commit()
+    flash('Transaksi berhasil dihapus!', 'danger')
+    return redirect(url_for('group_detail', group_id=group_id))
+
+@app.route('/groups/<int:group_id>/fund/delete/<int:fund_id>')
+@login_required
+def delete_fund(group_id, fund_id):
+    fund = GroupFund.query.filter_by(id=fund_id, group_id=group_id).first_or_404()
+    member = GroupMember.query.filter_by(
+        group_id=group_id, user_id=current_user.id).first()
+    if not member:
+        flash('Kamu bukan anggota grup ini!', 'danger')
+        return redirect(url_for('groups'))
+
+    log_activity(group_id, current_user.id, f'menghapus dana "{fund.name}"')
+    db.session.delete(fund)
+    db.session.commit()
+    flash(f'Dana "{fund.name}" berhasil dihapus!', 'danger')
+    return redirect(url_for('group_detail', group_id=group_id))
+
+
+@app.route('/groups/<int:group_id>/fund/edit/<int:fund_id>', methods=['POST'])
+@login_required
+def edit_fund(group_id, fund_id):
+    fund = GroupFund.query.filter_by(id=fund_id, group_id=group_id).first_or_404()
+    member = GroupMember.query.filter_by(
+        group_id=group_id, user_id=current_user.id).first()
+    if not member:
+        flash('Kamu bukan anggota grup ini!', 'danger')
+        return redirect(url_for('groups'))
+
+    old_name    = fund.name
+    fund.name   = request.form['fund_name']
+    fund.target = float(request.form.get('fund_target', 0))
+    fund.description = request.form.get('fund_desc', '')
+    db.session.commit()
+
+    log_activity(group_id, current_user.id,
+                 f'mengedit dana "{old_name}" menjadi "{fund.name}"')
+    flash(f'Dana "{fund.name}" berhasil diperbarui!', 'success')
+    return redirect(url_for('group_detail', group_id=group_id))
+
+@app.route('/groups/<int:group_id>/edit/<int:trans_id>', methods=['GET', 'POST'])
+@login_required
+def edit_group_transaction(group_id, trans_id):
+    group  = Group.query.get_or_404(group_id)
+    member = GroupMember.query.filter_by(
+        group_id=group_id, user_id=current_user.id).first()
+    if not member:
+        flash('Kamu bukan anggota grup ini!', 'danger')
+        return redirect(url_for('groups'))
+
+    t = GroupTransaction.query.filter_by(id=trans_id, group_id=group_id).first_or_404()
+
+    if request.method == 'POST':
+        old_title  = t.title
+        old_amount = t.amount
+        t.title    = request.form['title']
+        t.amount   = float(request.form['amount'])
+        t.category = request.form['category']
+        t.type     = request.form['type']
+        t.note     = request.form.get('note', '')
+        t.fund_id  = request.form.get('fund_id') or None
+        date_str   = request.form.get('date', '')
+        if date_str:
+            t.date = datetime.strptime(date_str, '%Y-%m-%d')
+
+        db.session.commit()
+        log_activity(group_id, current_user.id,
+                     f'mengedit transaksi "{old_title}" '
+                     f'(Rp {old_amount:,.0f} → Rp {t.amount:,.0f})')
+        flash('Transaksi berhasil diperbarui!', 'success')
+        return redirect(url_for('group_detail', group_id=group_id))
+
+    funds = GroupFund.query.filter_by(group_id=group_id).all()
+    return render_template('edit_group_transaction.html',
+                           group=group, transaction=t, funds=funds)
+
+@app.route('/groups/<int:group_id>/split')
+@login_required
+def split_list(group_id):
+    group  = Group.query.get_or_404(group_id)
+    member = GroupMember.query.filter_by(
+        group_id=group_id, user_id=current_user.id).first()
+    if not member:
+        flash('Kamu bukan anggota grup ini!', 'danger')
+        return redirect(url_for('groups'))
+
+    bills = SplitBill.query.filter_by(group_id=group_id)\
+                     .order_by(SplitBill.created_at.desc()).all()
+    members = GroupMember.query.filter_by(group_id=group_id).all()
+
+    return render_template('split_bill.html',
+                           group=group,
+                           bills=bills,
+                           members=members,
+                           current_user=current_user)
+
+
+@app.route('/groups/<int:group_id>/split/create', methods=['POST'])
+@login_required
+def create_split(group_id):
+    group  = Group.query.get_or_404(group_id)
+    member = GroupMember.query.filter_by(
+        group_id=group_id, user_id=current_user.id).first()
+    if not member:
+        flash('Kamu bukan anggota grup ini!', 'danger')
+        return redirect(url_for('groups'))
+
+    title        = request.form['title']
+    total_amount = float(request.form['total_amount'])
+    note         = request.form.get('note', '')
+    split_type   = request.form['split_type']  # 'equal' atau 'custom'
+    member_ids   = request.form.getlist('member_ids')
+
+    if not member_ids:
+        flash('Pilih minimal satu anggota!', 'danger')
+        return redirect(url_for('split_list', group_id=group_id))
+
+    bill = SplitBill(
+        group_id=group_id,
+        created_by=current_user.id,
+        title=title,
+        total_amount=total_amount,
+        note=note
+    )
+    db.session.add(bill)
+    db.session.flush()
+
+    if split_type == 'equal':
+        amount_each = total_amount / len(member_ids)
+        for uid in member_ids:
+            detail = SplitDetail(
+                bill_id=bill.id,
+                user_id=int(uid),
+                amount=amount_each
+            )
+            db.session.add(detail)
+    else:
+        # Custom — ambil amount per user dari form
+        for uid in member_ids:
+            custom_amount = float(request.form.get(f'custom_{uid}', 0))
+            detail = SplitDetail(
+                bill_id=bill.id,
+                user_id=int(uid),
+                amount=custom_amount
+            )
+            db.session.add(detail)
+
+    db.session.commit()
+    log_activity(group_id, current_user.id,
+                 f'membuat split tagihan "{title}" '
+                 f'total Rp {total_amount:,.0f} untuk {len(member_ids)} orang')
+    flash('Split tagihan berhasil dibuat!', 'success')
+    return redirect(url_for('split_list', group_id=group_id))
+
+
+@app.route('/groups/<int:group_id>/split/<int:bill_id>/pay/<int:detail_id>')
+@login_required
+def mark_paid(group_id, bill_id, detail_id):
+    detail = SplitDetail.query.get_or_404(detail_id)
+    detail.is_paid = True
+    detail.paid_at = datetime.utcnow()
+    db.session.commit()
+
+    log_activity(group_id, current_user.id,
+                 f'menandai pembayaran "{detail.bill.title}" '
+                 f'Rp {detail.amount:,.0f} sebagai lunas')
+    flash('Pembayaran berhasil ditandai lunas!', 'success')
+    return redirect(url_for('split_list', group_id=group_id))
+
+
+@app.route('/groups/<int:group_id>/split/<int:bill_id>/delete')
+@login_required
+def delete_split(group_id, bill_id):
+    bill = SplitBill.query.filter_by(
+        id=bill_id, group_id=group_id).first_or_404()
+
+    # Hanya pembuat yang boleh hapus
+    if bill.created_by != current_user.id:
+        flash('Hanya pembuat tagihan yang bisa menghapus!', 'danger')
+        return redirect(url_for('split_list', group_id=group_id))
+
+    log_activity(group_id, current_user.id,
+                 f'menghapus split tagihan "{bill.title}"')
+    db.session.delete(bill)
+    db.session.commit()
+    flash('Split tagihan berhasil dihapus!', 'danger')
+    return redirect(url_for('split_list', group_id=group_id))
+
+@app.route('/groups/<int:group_id>/split/scan', methods=['GET', 'POST'])
+@login_required
+def scan_split(group_id):
+    group  = Group.query.get_or_404(group_id)
+    member = GroupMember.query.filter_by(
+        group_id=group_id, user_id=current_user.id).first()
+    if not member:
+        flash('Kamu bukan anggota grup ini!', 'danger')
+        return redirect(url_for('groups'))
+
+    members = GroupMember.query.filter_by(group_id=group_id).all()
+
+    if request.method == 'POST':
+        if 'receipt' not in request.files:
+            flash('Tidak ada file yang diupload!', 'danger')
+            return redirect(url_for('scan_split', group_id=group_id))
+
+        file = request.files['receipt']
+        if file.filename == '':
+            flash('Pilih file dulu!', 'danger')
+            return redirect(url_for('scan_split', group_id=group_id))
+
+        # Baca gambar dan jalankan OCR
+        img    = Image.open(file.stream)
+        text   = pytesseract.image_to_string(img, lang='ind+eng')
+        amount = 0
+        lines  = text.split('\n')
+
+        # Deteksi total
+        for line in lines:
+            line_lower = line.lower()
+            if any(word in line_lower for word in
+                   ['total', 'grand total', 'jumlah', 'bayar']):
+                numbers = re.findall(r'[\d.,]+', line)
+                for num in reversed(numbers):
+                    clean = num.replace('.', '').replace(',', '')
+                    if clean.isdigit() and int(clean) > 1000:
+                        amount = int(clean)
+                        break
+                if amount > 0:
+                    break
+
+        # Deteksi nama toko
+        title = 'Belanja Bersama'
+        for line in lines[:5]:
+            line = line.strip()
+            if len(line) > 3 and not line.isdigit():
+                title = line.title()
+                break
+
+        # Kumpulkan item sebagai catatan
+        note_lines = [l.strip() for l in lines if len(l.strip()) > 3]
+        note       = ', '.join(note_lines[:5])
+
+        result = {
+            'title' : title,
+            'amount': amount,
+            'note'  : note
+        }
+
+        return render_template('scan_split.html',
+                               group=group,
+                               members=members,
+                               result=result)
+
+    return render_template('scan_split.html',
+                           group=group,
+                           members=members,
+                           result=None)
+
+@app.route('/groups/<int:group_id>/report')
+@login_required
+def group_report(group_id):
+    group  = Group.query.get_or_404(group_id)
+    member = GroupMember.query.filter_by(
+        group_id=group_id, user_id=current_user.id).first()
+    if not member:
+        flash('Kamu bukan anggota grup ini!', 'danger')
+        return redirect(url_for('groups'))
+
+    transactions = GroupTransaction.query.filter_by(group_id=group_id)\
+                                   .order_by(GroupTransaction.date.asc()).all()
+
+    # Pengeluaran per kategori
+    category_data = {}
+    for t in transactions:
+        if t.type == 'expense':
+            category_data[t.category] = \
+                category_data.get(t.category, 0) + t.amount
+
+    # Pemasukan vs pengeluaran per bulan
+    monthly_data = {}
+    for t in transactions:
+        key = t.date.strftime('%b %Y')
+        if key not in monthly_data:
+            monthly_data[key] = {'income': 0, 'expense': 0}
+        monthly_data[key][t.type] += t.amount
+
+    # Pengeluaran per anggota
+    member_data = {}
+    for t in transactions:
+        if t.type == 'expense':
+            name = t.user.name
+            member_data[name] = member_data.get(name, 0) + t.amount
+
+    # Pengeluaran per dana
+    fund_data = {}
+    for t in transactions:
+        if t.type == 'expense':
+            fund_name = t.fund.name if t.fund else 'Tanpa Dana'
+            fund_data[fund_name] = fund_data.get(fund_name, 0) + t.amount
+
+    total_income  = sum(t.amount for t in transactions if t.type == 'income')
+    total_expense = sum(t.amount for t in transactions if t.type == 'expense')
+    balance       = total_income - total_expense
+
+    return render_template('group_report.html',
+                           group=group,
+                           category_data=category_data,
+                           monthly_data=monthly_data,
+                           member_data=member_data,
+                           fund_data=fund_data,
+                           total_income=total_income,
+                           total_expense=total_expense,
+                           balance=balance)
 
 # =====================
 # JALANKAN APP
@@ -379,5 +901,6 @@ def get_budget_status(user_id):
 
 if __name__ == '__main__':
     with app.app_context():
+        db.create_all()
         print("Database siap!")
     app.run(debug=True)

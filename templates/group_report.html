@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan - {{ group.name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+</head>
+<body>
+<header>
+    <h1>💰 FinTrack</h1>
+    <p>Laporan Keuangan — {{ group.name }}</p>
+</header>
+<nav class="navbar">
+    <a href="/">🏠 Beranda</a>
+    <a href="/groups">👥 Sharing</a>
+    <a href="/groups/{{ group.id }}">← {{ group.name }}</a>
+    <a href="/groups/{{ group.id }}/split">🧾 Split Tagihan</a>
+    <a href="/groups/{{ group.id }}/report" class="active">📊 Laporan</a>
+    <span style="margin-left:auto; font-size:13px; color:#666;">
+        👤 {{ current_user.name }}
+    </span>
+    <a href="/logout" class="btn btn-danger" style="padding:5px 14px;">Logout</a>
+</nav>
+<main>
+
+    <!-- Ringkasan -->
+    <div class="summary-grid">
+        <div class="card summary-card income">
+            <p class="label">Total Pemasukan</p>
+            <p class="amount">Rp {{ "{:,.0f}".format(total_income) }}</p>
+        </div>
+        <div class="card summary-card expense">
+            <p class="label">Total Pengeluaran</p>
+            <p class="amount">Rp {{ "{:,.0f}".format(total_expense) }}</p>
+        </div>
+        <div class="card summary-card balance">
+            <p class="label">Saldo Grup</p>
+            <p class="amount">Rp {{ "{:,.0f}".format(balance) }}</p>
+        </div>
+    </div>
+
+    <!-- Baris grafik atas -->
+    <div class="chart-grid" style="margin-bottom:20px;">
+
+        <!-- Pengeluaran per kategori -->
+        <div class="card">
+            <h2>Pengeluaran per Kategori</h2>
+            {% if category_data %}
+                <canvas id="categoryChart"></canvas>
+            {% else %}
+                <p class="empty-msg">Belum ada data pengeluaran.</p>
+            {% endif %}
+        </div>
+
+        <!-- Pemasukan vs Pengeluaran per bulan -->
+        <div class="card">
+            <h2>Pemasukan vs Pengeluaran</h2>
+            {% if monthly_data %}
+                <canvas id="monthlyChart"></canvas>
+            {% else %}
+                <p class="empty-msg">Belum ada data transaksi.</p>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <!-- Baris grafik bawah -->
+    <div class="chart-grid" style="margin-bottom:20px;">
+
+        <!-- Pengeluaran per anggota -->
+        <div class="card">
+            <h2>Pengeluaran per Anggota</h2>
+            {% if member_data %}
+                <canvas id="memberChart"></canvas>
+            {% else %}
+                <p class="empty-msg">Belum ada data pengeluaran.</p>
+            {% endif %}
+        </div>
+
+        <!-- Pengeluaran per dana -->
+        <div class="card">
+            <h2>Pengeluaran per Dana</h2>
+            {% if fund_data %}
+                <canvas id="fundChart"></canvas>
+            {% else %}
+                <p class="empty-msg">Belum ada data pengeluaran.</p>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <!-- Tabel kontribusi anggota -->
+    <div class="card">
+        <h2>Ringkasan Kontribusi Anggota</h2>
+        {% if member_data %}
+        <table style="margin-top:16px;">
+            <thead>
+                <tr>
+                    <th>Anggota</th>
+                    <th>Total Pengeluaran</th>
+                    <th>Persentase</th>
+                    <th>Porsi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for name, amount in member_data.items()|sort(attribute='1', reverse=True) %}
+                {% set pct = (amount / total_expense * 100) if total_expense > 0 else 0 %}
+                <tr>
+                    <td>{{ name }}</td>
+                    <td class="text-expense">Rp {{ "{:,.0f}".format(amount) }}</td>
+                    <td>{{ "{:.1f}".format(pct) }}%</td>
+                    <td style="width:200px;">
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill fill-safe"
+                                 style="width:{{ pct }}%"></div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <p class="empty-msg">Belum ada data.</p>
+        {% endif %}
+    </div>
+
+    <!-- Tabel pengeluaran per dana -->
+    {% if fund_data %}
+    <div class="card">
+        <h2>Ringkasan per Dana / Pos Keuangan</h2>
+        <table style="margin-top:16px;">
+            <thead>
+                <tr>
+                    <th>Dana</th>
+                    <th>Total Pengeluaran</th>
+                    <th>Persentase</th>
+                    <th>Porsi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for name, amount in fund_data.items()|sort(attribute='1', reverse=True) %}
+                {% set pct = (amount / total_expense * 100) if total_expense > 0 else 0 %}
+                <tr>
+                    <td>{{ name }}</td>
+                    <td class="text-expense">Rp {{ "{:,.0f}".format(amount) }}</td>
+                    <td>{{ "{:.1f}".format(pct) }}%</td>
+                    <td style="width:200px;">
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill fill-safe"
+                                 style="width:{{ pct }}%"></div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+</main>
+
+<script>
+    const colors = [
+        '#2d6a4f','#52b788','#95d5b2','#1d4ed8',
+        '#60a5fa','#dc2626','#f87171','#f59e0b','#a78bfa'
+    ];
+
+    // Grafik kategori
+    {% if category_data %}
+    new Chart(document.getElementById('categoryChart'), {
+        type: 'doughnut',
+        data: {
+            labels: {{ category_data.keys() | list | tojson }},
+            datasets: [{
+                data: {{ category_data.values() | list | tojson }},
+                backgroundColor: colors,
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+    {% endif %}
+
+    // Grafik bulanan
+    {% if monthly_data %}
+    new Chart(document.getElementById('monthlyChart'), {
+        type: 'bar',
+        data: {
+            labels: {{ monthly_data.keys() | list | tojson }},
+            datasets: [
+                {
+                    label: 'Pemasukan',
+                    data: {{ monthly_data.values() | map(attribute='income') | list | tojson }},
+                    backgroundColor: '#52b788'
+                },
+                {
+                    label: 'Pengeluaran',
+                    data: {{ monthly_data.values() | map(attribute='expense') | list | tojson }},
+                    backgroundColor: '#f87171'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: v => 'Rp ' + v.toLocaleString('id-ID')
+                    }
+                }
+            }
+        }
+    });
+    {% endif %}
+
+    // Grafik per anggota
+    {% if member_data %}
+    new Chart(document.getElementById('memberChart'), {
+        type: 'bar',
+        data: {
+            labels: {{ member_data.keys() | list | tojson }},
+            datasets: [{
+                label: 'Pengeluaran',
+                data: {{ member_data.values() | list | tojson }},
+                backgroundColor: colors
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: v => 'Rp ' + v.toLocaleString('id-ID')
+                    }
+                }
+            }
+        }
+    });
+    {% endif %}
+
+    // Grafik per dana
+    {% if fund_data %}
+    new Chart(document.getElementById('fundChart'), {
+        type: 'doughnut',
+        data: {
+            labels: {{ fund_data.keys() | list | tojson }},
+            datasets: [{
+                data: {{ fund_data.values() | list | tojson }},
+                backgroundColor: colors,
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+    {% endif %}
+</script>
+
+</body>
+</html>
