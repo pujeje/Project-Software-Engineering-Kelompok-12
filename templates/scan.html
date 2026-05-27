@@ -14,19 +14,20 @@
 </header>
 
 <nav class="navbar">
-    <a href="/">🏠 Beranda</a>
-    <a href="/report">📊 Laporan</a>
-    <a href="/scan" class="active">📷 Scan Struk</a>
+    <a href="/" class="active">🏠 {{ t['nav_home'] }}</a>
+    <a href="/report">📊 {{ t['nav_report'] }}</a>
+    <a href="/scan" class="active">📷 {{ t['nav_scan'] }}</a>
     <span style="margin-left:auto; font-size:13px; color:#666;">
         👤 {{ current_user.name }}
     </span>
-    <a href="/logout" class="btn btn-danger" style="padding: 5px 14px;">Logout</a>
-    <a href="/groups">👥 Sharing</a>
+    <a href="/logout" class="btn btn-danger" style="padding: 5px 14px;">{{ t['nav_logout'] }}</a>
+    <a href="/groups">👥 {{ t['nav_groups'] }}</a>
+    <a href="/settings">⚙️ {{ t['nav_settings'] }}</a>
 </nav>
 
 <main>
     <div class="card form-card">
-        <h2>📷 Scan Struk Belanja</h2>
+        <h2>📷 {{ t['nav_scan'] }}</h2>
         <p style="color:#666; font-size:14px; margin-bottom:20px;">
             Upload foto struk, AI akan otomatis membaca dan mengisi data transaksi.
         </p>
@@ -34,7 +35,7 @@
         <!-- Form Upload -->
         <form method="POST" action="/scan" enctype="multipart/form-data">
             <div class="form-group">
-                <label>Upload Foto Struk</label>
+                <label>{{ t['upload_receipt'] }}</label>
                 <input type="file" name="receipt" accept="image/*" required
                        onchange="previewImage(this)">
             </div>
@@ -46,7 +47,7 @@
             </div>
 
             <button type="submit" class="btn btn-primary" style="width:100%;">
-                🔍 Scan Struk
+                🔍 {{ t['scan_receipt'] }}
             </button>
         </form>
 
@@ -57,40 +58,40 @@
 
             <form method="POST" action="/add">
                 <div class="form-group">
-                    <label>Judul Transaksi</label>
+                    <label>{{ t['transaction_title'] }}</label>
                     <input type="text" name="title" value="{{ result.title }}" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Jumlah (Rp)</label>
+                    <label>{{ t['amount'] }} (Rp)</label>
                     <input type="number" name="amount" value="{{ result.amount }}" min="0" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Tanggal</label>
+                    <label>{{ t['date'] }}</label>
                     <input type="date" name="date" value="{{ result.date }}">
                 </div>
 
                 <div class="form-group">
-                    <label>Tipe</label>
+                    <label>{{ t['type'] }}</label>
                     <select name="type">
-                        <option value="expense" selected>Pengeluaran</option>
-                        <option value="income">Pemasukan</option>
+                        <option value="expense" selected>{{ t['expense'] }}</option>
+                        <option value="income">{{ t['income'] }}</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label>Kategori</label>
+                    <label>{{ t['category'] }}</label>
                     <select name="category">
                         {% set categories = ['Makanan','Transport','Belanja','Hiburan','Kesehatan','Pendidikan','Gaji','Lainnya'] %}
                         {% for cat in categories %}
-                            <option value="{{ cat }}" {{ 'selected' if result.category == cat }}>{{ cat }}</option>
+                            <option value="{{ cat }}" {{ 'selected' if result.category == cat }}>{{ t[cat] }}</option>
                         {% endfor %}
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label>Catatan (item yang terdeteksi)</label>
+                    <label>{{ t['note'] }}</label>
                     <textarea name="note">{{ result.note }}</textarea>
                 </div>
 

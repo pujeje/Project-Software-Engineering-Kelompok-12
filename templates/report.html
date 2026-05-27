@@ -15,30 +15,37 @@
 </header>
 
 <nav class="navbar">
-    <a href="/">🏠 Beranda</a>
-    <a href="/report" class="active">📊 Laporan</a>
-    <a href="{{ url_for('scan') }}">📷 Scan Struk</a>
+    <a href="/" class="active">🏠 {{ t['nav_home'] }}</a>
+    <a href="/report" class="active">📊 {{ t['nav_report'] }}</a>
+    <a href="{{ url_for('scan') }}">📷 {{ t['nav_scan'] }}</a>
     <span style="margin-left:auto; font-size:13px; color:#666;">
         👤 {{ current_user.name }}
     </span>
-    <a href="/logout" class="btn btn-danger" style="padding: 5px 14px;">Logout</a>
-    <a href="/groups">👥 Sharing</a>
+    <a href="/logout" class="btn btn-danger" style="padding: 5px 14px;">{{ t['nav_logout'] }}</a>
+    <a href="/groups">👥 {{ t['nav_groups'] }}</a>
+    <a href="/settings">⚙️ {{ t['nav_settings'] }}</a>
 </nav>
+
+<p>{{ t['nav_report'] }}</p>  <!-- di header -->
+<a href="/report" class="active">📊 {{ t['nav_report'] }}</a>
+<h2>{{ t['expense_by_cat'] }}</h2>
+<h2>{{ t['income_vs_expense'] }}</h2>
+<p class="empty-msg">{{ t['no_data'] }}</p>
 
 <main>
 
     <!-- Ringkasan -->
     <div class="summary-grid">
         <div class="card summary-card income">
-            <p class="label">Total Pemasukan</p>
+            <p class="label">{{ t['total_income'] }}</p>
             <p class="amount">Rp {{ "{:,.0f}".format(total_income) }}</p>
         </div>
         <div class="card summary-card expense">
-            <p class="label">Total Pengeluaran</p>
+            <p class="label">{{ t['total_expense'] }}</p>
             <p class="amount">Rp {{ "{:,.0f}".format(total_expense) }}</p>
         </div>
         <div class="card summary-card balance">
-            <p class="label">Saldo</p>
+            <p class="label">{{ t['balance'] }}</p>
             <p class="amount">Rp {{ "{:,.0f}".format(balance) }}</p>
         </div>
     </div>
@@ -47,21 +54,21 @@
 
         <!-- Grafik Donut: Pengeluaran per Kategori -->
         <div class="card">
-            <h2>Pengeluaran per Kategori</h2>
+            <h2>{{ t['expense_by_cat'] }}</h2>
             {% if category_data %}
                 <canvas id="categoryChart"></canvas>
             {% else %}
-                <p class="empty-msg">Belum ada data pengeluaran.</p>
+                <p class="empty-msg">{{ t['no_expense_data'] }}</p>
             {% endif %}
         </div>
 
         <!-- Grafik Bar: Pemasukan vs Pengeluaran -->
         <div class="card">
-            <h2>Pemasukan vs Pengeluaran</h2>
+            <h2>{{ t['income_vs_expense'] }}</h2>
             {% if monthly_data %}
                 <canvas id="monthlyChart"></canvas>
             {% else %}
-                <p class="empty-msg">Belum ada data transaksi.</p>
+                <p class="empty-msg">{{ t['no_transaction_data'] }}</p>
             {% endif %}
         </div>
 

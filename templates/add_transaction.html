@@ -15,56 +15,68 @@
 
 <main>
     <div class="card form-card">
-        <h2>Tambah Transaksi</h2>
+        <h2>{{ t['add_title'] }}</h2>
 
         <form method="POST" action="/add">
 
             <div class="form-group">
-                <label>Judul Transaksi</label>
+                <label>{{ t['form_title'] }}i</label>
                 <input type="text" name="title" placeholder="Contoh: Beli makan siang" required>
             </div>
 
             <div class="form-group">
-                <label>Jumlah (Rp)</label>
+                <label>{{ t['form_amount'] }} (Rp)</label>
                 <input type="number" name="amount" placeholder="Contoh: 25000" min="0" required>
             </div>
 
             <div class="form-group">
-                <label>Tanggal</label>
+                <label>{{ t['form_date'] }}</label>
                 <input type="date" name="date" value="{{ today }}">
             </div>
 
             <div class="form-group">
-                <label>Tipe</label>
+                <label>{{ t['form_type'] }}</label>
                 <select name="type">
-                    <option value="expense">Pengeluaran</option>
-                    <option value="income">Pemasukan</option>
+                    <option value="expense">{{ t['expense'] }}</option>
+                    <option value="income">{{ t['income'] }}</option>
                 </select>
             </div>
 
             <div class="form-group">
-                <label>Kategori</label>
+                <label>{{ t['form_category'] }}</label>
                 <select name="category">
-                    <option value="Makanan">Makanan</option>
-                    <option value="Transport">Transport</option>
-                    <option value="Belanja">Belanja</option>
-                    <option value="Hiburan">Hiburan</option>
-                    <option value="Kesehatan">Kesehatan</option>
-                    <option value="Pendidikan">Pendidikan</option>
-                    <option value="Gaji">Gaji</option>
-                    <option value="Lainnya">Lainnya</option>
+                    <option value="Makanan">{{ t['food'] }}</option>
+                    <option value="Transport">{{ t['transport'] }}</option>
+                    <option value="Belanja">{{ t['shopping'] }}</option>
+                    <option value="Hiburan">{{ t['entertainment'] }}</option>
+                    <option value="Kesehatan">{{ t['health'] }}</option>
+                    <option value="Pendidikan">{{ t['education'] }}</option>
+                    <option value="Gaji">{{ t['salary'] }}</option>
+                    <option value="Lainnya">{{ t['other'] }}</option>
                 </select>
             </div>
 
             <div class="form-group">
-                <label>Catatan (opsional)</label>
+                <label>{{ t['form_note'] }} (opsional)</label>
                 <textarea name="note" placeholder="Tambahkan catatan..."></textarea>
             </div>
 
             <div class="form-actions">
-                <a href="/" class="btn btn-secondary">Batal</a>
-                <button type="submit" class="btn btn-primary">Simpan</button>
+                <a href="/" class="btn btn-secondary">{{ t['btn_cancel'] }}</a>
+                <button type="submit" class="btn btn-primary">{{ t['btn_save'] }}</button>
             </div>
+
+            <h2>{{ t['add_title'] }}</h2>
+                <label>{{ t['form_title'] }}</label>
+                <label>{{ t['form_amount'] }}</label>
+                <label>{{ t['form_date'] }}</label>
+                <label>{{ t['form_type'] }}</label>
+                    <option value="expense">{{ t['expense'] }}</option>
+                    <option value="income">{{ t['income'] }}</option>
+                <label>{{ t['form_category'] }}</label>
+                <label>{{ t['form_note'] }}</label>
+                    <a href="/" class="btn btn-secondary">{{ t['btn_cancel'] }}</a>
+                    <button type="submit" class="btn btn-primary">{{ t['btn_save'] }}</button>
 
         </form>
     </div>

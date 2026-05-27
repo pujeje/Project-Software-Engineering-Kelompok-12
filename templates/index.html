@@ -14,14 +14,18 @@
 </header>
 
 <nav class="navbar">
-    <a href="/" class="active">🏠 Beranda</a>
-    <a href="/report">📊 Laporan</a>
-    <a href="{{ url_for('scan') }}">📷 Scan Struk</a>
+    <!-- Navbar -->
+<a href="/" class="active">🏠 {{ t['nav_home'] }}</a>
+<a href="/report">📊 {{ t['nav_report'] }}</a>
+<a href="/scan">📷 {{ t['nav_scan'] }}</a>
+<a href="/groups">👥 {{ t['nav_sharing'] }}</a>
+<a href="/settings">⚙️ {{ t['nav_settings'] }}</a>
+<a href="/logout" class="btn btn-danger">{{ t['nav_logout'] }}</a>
     <span style="margin-left:auto; font-size:13px; color:#666;">
         👤 {{ current_user.name }}
     </span>
-    <a href="/logout" class="btn btn-danger" style="padding: 5px 14px;">Logout</a>
-    <a href="/groups">👥 Sharing</a>
+
+
 </nav>
 
 <main>
@@ -101,12 +105,12 @@
         <h3 style="margin-bottom:16px;">⚙️ Atur Budget</h3>
         <form method="POST" action="/budget" style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
             <div class="form-group" style="margin:0; flex:1; min-width:150px;">
-                <label>Jumlah Budget (Rp)</label>
+                <label>{{ t['budget_amount'] }} (Rp)</label>
                 <input type="number" name="amount" placeholder="Contoh: 500000" min="0"
                        value="{{ budget.amount | int if budget else '' }}" required>
             </div>
             <div class="form-group" style="margin:0; flex:1; min-width:150px;">
-                <label>Periode</label>
+                <label>{{ t['period'] }}</label>
                 <select name="period">
                     <option value="daily"   {{ 'selected' if budget and budget.period == 'daily' }}>Harian</option>
                     <option value="weekly"  {{ 'selected' if budget and budget.period == 'weekly' }}>Mingguan</option>
@@ -114,7 +118,7 @@
                 </select>
             </div>
             <div style="margin-bottom:0;">
-                <button type="submit" class="btn btn-primary">Simpan Budget</button>
+                <button type="submit" class="btn btn-primary">{{ t['save_budget'] }}</button>
             </div>
         </form>
     </div>
@@ -122,24 +126,24 @@
 
 {% if not budget_status %}
 <div class="card budget-card" style="text-align:center; padding:20px;">
-    <p style="color:#666; margin-bottom:12px;">Belum ada budget yang diatur.</p>
-    <button class="btn btn-primary" onclick="toggleBudgetForm()">+ Atur Budget Sekarang</button>
+    <p style="color:#666; margin-bottom:12px;">{{ t['no_budget_set'] }}</p>
+    <button class="btn btn-primary" onclick="toggleBudgetForm()">+ {{ t['set_budget'] }}</button>
     <div id="budget-form" style="display:none; margin-top:16px; text-align:left;">
         <form method="POST" action="/budget" style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
             <div class="form-group" style="margin:0; flex:1; min-width:150px;">
-                <label>Jumlah Budget (Rp)</label>
+                <label>{{ t['budget_amount'] }} (Rp)</label>
                 <input type="number" name="amount" placeholder="Contoh: 500000" min="0" required>
             </div>
             <div class="form-group" style="margin:0; flex:1; min-width:150px;">
-                <label>Periode</label>
+                <label>{{ t['period'] }}</label>
                 <select name="period">
-                    <option value="daily">Harian</option>
-                    <option value="weekly">Mingguan</option>
-                    <option value="monthly">Bulanan</option>
+                    <option value="daily">{{ t['daily'] }}</option>
+                    <option value="weekly">{{ t['weekly'] }}</option>
+                    <option value="monthly">{{ t['monthly'] }}</option>
                 </select>
             </div>
             <div>
-                <button type="submit" class="btn btn-primary">Simpan</button>
+                <button type="submit" class="btn btn-primary">{{ t['save'] }}</button>
             </div>
         </form>
     </div>
@@ -149,37 +153,37 @@
     <!-- Kartu Ringkasan -->
     <div class="summary-grid">
         <div class="card summary-card income">
-            <p class="label">Total Pemasukan</p>
+            <p class="label">{{ t['total_income'] }}</p>
             <p class="amount">Rp {{ "{:,.0f}".format(total_income) }}</p>
         </div>
         <div class="card summary-card expense">
-            <p class="label">Total Pengeluaran</p>
+            <p class="label">{{ t['total_expense'] }}</p>
             <p class="amount">Rp {{ "{:,.0f}".format(total_expense) }}</p>
         </div>
         <div class="card summary-card balance">
-            <p class="label">Saldo</p>
+            <p class="label">{{ t['balance'] }}</p>
             <p class="amount">Rp {{ "{:,.0f}".format(balance) }}</p>
         </div>
     </div>
 
     <!-- Tombol Tambah -->
     <div class="action-bar">
-        <a href="/add" class="btn btn-primary">+ Tambah Transaksi</a>
+        <a href="/add" class="btn btn-primary">{{ t['add_transaction'] }}</a>
     </div>
 
     <!-- Tabel Riwayat -->
     <div class="card">
-        <h2>Riwayat Transaksi</h2>
+        <h2>{{ t['transaction_history'] }}</h2>
         {% if transactions %}
         <table>
             <thead>
                 <tr>
-                    <th>Tanggal</th>
-                    <th>Judul</th>
-                    <th>Kategori</th>
-                    <th>Tipe</th>
-                    <th>Jumlah</th>
-                    <th>Aksi</th>
+                    <th>{{ t['date'] }}</th>
+                    <th>{{ t['title'] }}</th>
+                    <th>{{ t['category'] }}</th>
+                    <th>{{ t['type'] }}</th>
+                    <th>{{ t['amount'] }}</th>
+                    <th>{{ t['actions'] }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -190,23 +194,23 @@
                     <td>{{ t.category }}</td>
                     <td>
                         <span class="badge {{ 'badge-income' if t.type == 'income' else 'badge-expense' }}">
-                            {{ 'Pemasukan' if t.type == 'income' else 'Pengeluaran' }}
+                            {{ t['income'] if t.type == 'income' else t['expense'] }}
                         </span>
                     </td>
                     <td class="{{ 'text-income' if t.type == 'income' else 'text-expense' }}">
                         Rp {{ "{:,.0f}".format(t.amount) }}
                     </td>
                     <td style="display: flex; gap: 8px;">
-                        <a href="/edit/{{ t.id }}" class="btn btn-edit">Edit</a>
+                        <a href="/edit/{{ t.id }}" class="btn btn-edit">{{ t['edit'] }}</a>
                         <a href="/delete/{{ t.id }}" class="btn btn-danger"
-                        onclick="return confirm('Yakin mau hapus?')">Hapus</a>
+                        onclick="return confirm('Yakin mau hapus?')">{{ t['delete'] }}</a>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
         {% else %}
-            <p class="empty-msg">Belum ada transaksi. Tambahkan yang pertama!</p>
+            <p class="empty-msg">{{ t['no_transaction'] }}</p>
         {% endif %}
     </div>
 

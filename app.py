@@ -7,16 +7,27 @@ import os
 import re
 from PIL import Image
 import pytesseract
-from flask_migrate import Migrate
+from flask_migrate import Migrate, history
 import secrets
-
+import csv
+import io
+from werkzeug.utils import secure_filename
+from flask import send_file
+from flask_babel import Babel
+from translations import get_translation
 
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'fintrack-secret'
+app.config['UPLOAD_FOLDER'] = 'static/uploads'
+app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024  # Max 2MB
+os.makedirs('static/uploads', exist_ok=True)
+app.secret_key = "rahasia"
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
@@ -32,11 +43,26 @@ login_manager.login_message = 'Silakan login dulu!'
 # =====================
 
 class User(UserMixin, db.Model):
-    id       = db.Column(db.Integer, primary_key=True)
-    name     = db.Column(db.String(100), nullable=False)
-    email    = db.Column(db.String(100), unique=True, nullable=False)
-    password = db.Column(db.String(200), nullable=False)
-    transactions = db.relationship('Transaction', backref='user', lazy=True)
+    id            = db.Column(db.Integer, primary_key=True)
+    name          = db.Column(db.String(100), nullable=False)
+    email         = db.Column(db.String(100), unique=True, nullable=False)
+    password      = db.Column(db.String(200), nullable=False)
+    photo         = db.Column(db.String(200), nullable=True)
+    language      = db.Column(db.String(5), default='id')
+    theme         = db.Column(db.String(10), default='light')
+    notif_popup   = db.Column(db.Boolean, default=True)
+    timezone      = db.Column(db.String(50), default='Asia/Jakarta')
+    created_at    = db.Column(db.DateTime, default=datetime.utcnow)
+    transactions  = db.relationship('Transaction', backref='user', lazy=True)
+    language = db.Column(db.String(5), default='id')
+
+class LoginHistory(db.Model):
+    id         = db.Column(db.Integer, primary_key=True)
+    user_id    = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    ip_address = db.Column(db.String(50), nullable=True)
+    user_agent = db.Column(db.String(200), nullable=True)
+    logged_in_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user       = db.relationship('User', backref='login_histories')
 
 class Transaction(db.Model):
     id       = db.Column(db.Integer, primary_key=True)
@@ -55,9 +81,18 @@ class Budget(db.Model):
     period     = db.Column(db.String(10), nullable=False)  # 'daily', 'weekly', 'monthly'
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+@app.context_processor
+def inject_translation():
+    if current_user.is_authenticated:
+        lang = current_user.language or 'id'
+    else:
+        lang = 'id'
+    return dict(t=get_translation(lang))
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
 
 # =====================
 # AUTH ROUTES
@@ -111,6 +146,15 @@ def login():
         login_user(user)
         flash(f'Selamat datang, {user.name}!', 'success')
         return redirect(url_for('index'))
+
+        # Catat riwayat login
+        history = LoginHistory(
+        user_id    = user.id,
+        ip_address = request.remote_addr,
+        user_agent = request.headers.get('User-Agent', '')[:200]
+)
+        db.session.add(history)
+        db.session.commit()
 
     return render_template('login.html')
 
@@ -894,6 +938,197 @@ def group_report(group_id):
                            total_income=total_income,
                            total_expense=total_expense,
                            balance=balance)
+
+# =====================
+# SETTINGS ROUTES
+# =====================
+
+@app.route('/settings')
+@login_required
+def settings():
+    login_histories = LoginHistory.query.filter_by(user_id=current_user.id)\
+                                  .order_by(LoginHistory.logged_in_at.desc())\
+                                  .limit(5).all()
+    return render_template('settings.html',
+                           login_histories=login_histories)
+
+
+@app.route('/settings/profile', methods=['POST'])
+@login_required
+def update_profile():
+    current_user.name  = request.form['name']
+    new_email          = request.form['email']
+
+    # Cek email sudah dipakai user lain
+    existing = User.query.filter_by(email=new_email).first()
+    if existing and existing.id != current_user.id:
+        flash('Email sudah dipakai akun lain!', 'danger')
+        return redirect(url_for('settings'))
+
+    current_user.email = new_email
+
+    # Upload foto profil
+    if 'photo' in request.files:
+        file = request.files['photo']
+        if file and file.filename != '':
+            ext      = file.filename.rsplit('.', 1)[-1].lower()
+            if ext in ['jpg', 'jpeg', 'png', 'gif']:
+                filename = secure_filename(
+                    f'user_{current_user.id}.{ext}')
+                file.save(os.path.join(
+                    app.config['UPLOAD_FOLDER'], filename))
+                current_user.photo = filename
+            else:
+                flash('Format foto tidak didukung! Gunakan JPG/PNG.', 'danger')
+                return redirect(url_for('settings'))
+
+    db.session.commit()
+    flash('Profil berhasil diperbarui!', 'success')
+    return redirect(url_for('settings'))
+
+
+@app.route('/settings/password', methods=['POST'])
+@login_required
+def change_password():
+    current_pw  = request.form['current_password']
+    new_pw      = request.form['new_password']
+    confirm_pw  = request.form['confirm_password']
+
+    if not check_password_hash(current_user.password, current_pw):
+        flash('Password saat ini salah!', 'danger')
+        return redirect(url_for('settings'))
+
+    if new_pw != confirm_pw:
+        flash('Password baru tidak cocok!', 'danger')
+        return redirect(url_for('settings'))
+
+    if len(new_pw) < 6:
+        flash('Password minimal 6 karakter!', 'danger')
+        return redirect(url_for('settings'))
+
+    current_user.password = generate_password_hash(new_pw)
+    db.session.commit()
+    flash('Password berhasil diubah!', 'success')
+    return redirect(url_for('settings'))
+
+
+@app.route('/settings/preferences', methods=['POST'])
+@login_required
+def update_preferences():
+    current_user.language    = request.form.get('language', 'id')
+    current_user.theme       = request.form.get('theme', 'light')
+    current_user.notif_popup = 'notif_popup' in request.form
+    current_user.timezone    = request.form.get('timezone', 'Asia/Jakarta')
+    db.session.commit()
+    flash('Preferensi berhasil disimpan!', 'success')
+    return redirect(url_for('settings'))
+
+
+@app.route('/settings/export/csv')
+@login_required
+def export_csv():
+    transactions = Transaction.query.filter_by(user_id=current_user.id)\
+                              .order_by(Transaction.date.desc()).all()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['Tanggal', 'Judul', 'Kategori', 'Tipe', 'Jumlah', 'Catatan'])
+    for t in transactions:
+        writer.writerow([
+            t.date.strftime('%d/%m/%Y'),
+            t.title,
+            t.category,
+            'Pemasukan' if t.type == 'income' else 'Pengeluaran',
+            t.amount,
+            t.note or ''
+        ])
+
+    output.seek(0)
+    return send_file(
+        io.BytesIO(output.getvalue().encode('utf-8-sig')),
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name=f'fintrack_{current_user.name}_transaksi.csv'
+    )
+
+
+@app.route('/settings/export/excel')
+@login_required
+def export_excel():
+    import openpyxl
+    from openpyxl.styles import Font, PatternFill, Alignment
+
+    transactions = Transaction.query.filter_by(user_id=current_user.id)\
+                              .order_by(Transaction.date.desc()).all()
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = 'Transaksi'
+
+    # Header styling
+    headers = ['Tanggal', 'Judul', 'Kategori', 'Tipe', 'Jumlah (Rp)', 'Catatan']
+    for col, header in enumerate(headers, 1):
+        cell            = ws.cell(row=1, column=col, value=header)
+        cell.font       = Font(bold=True, color='FFFFFF')
+        cell.fill       = PatternFill('solid', fgColor='2D6A4F')
+        cell.alignment  = Alignment(horizontal='center')
+
+    # Data
+    for row, t in enumerate(transactions, 2):
+        ws.cell(row=row, column=1, value=t.date.strftime('%d/%m/%Y'))
+        ws.cell(row=row, column=2, value=t.title)
+        ws.cell(row=row, column=3, value=t.category)
+        ws.cell(row=row, column=4,
+                value='Pemasukan' if t.type == 'income' else 'Pengeluaran')
+        ws.cell(row=row, column=5, value=t.amount)
+        ws.cell(row=row, column=6, value=t.note or '')
+
+        # Warnain baris income/expense
+        fill_color = 'D1FAE5' if t.type == 'income' else 'FEE2E2'
+        for col in range(1, 7):
+            ws.cell(row=row, column=col).fill = \
+                PatternFill('solid', fgColor=fill_color)
+
+    # Auto width
+    for col in ws.columns:
+        max_len = max(len(str(cell.value or '')) for cell in col)
+        ws.column_dimensions[col[0].column_letter].width = min(max_len + 4, 40)
+
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+
+    return send_file(
+        output,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name=f'fintrack_{current_user.name}_transaksi.xlsx'
+    )
+
+
+@app.route('/settings/delete-account', methods=['POST'])
+@login_required
+def delete_account():
+    password = request.form['password']
+
+    if not check_password_hash(current_user.password, password):
+        flash('Password salah! Akun tidak dihapus.', 'danger')
+        return redirect(url_for('settings'))
+
+    # Hapus semua data user
+    Transaction.query.filter_by(user_id=current_user.id).delete()
+    Budget.query.filter_by(user_id=current_user.id).delete()
+    LoginHistory.query.filter_by(user_id=current_user.id).delete()
+    GroupMember.query.filter_by(user_id=current_user.id).delete()
+
+    user = User.query.get(current_user.id)
+    logout_user()
+    db.session.delete(user)
+    db.session.commit()
+
+    flash('Akun berhasil dihapus.', 'success')
+    return redirect(url_for('login'))
+
 
 # =====================
 # JALANKAN APP

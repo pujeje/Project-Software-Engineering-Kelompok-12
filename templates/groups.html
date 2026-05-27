@@ -12,12 +12,13 @@
     <p>Kelola keuanganmu dengan mudah</p>
 </header>
 <nav class="navbar">
-    <a href="/">🏠 Beranda</a>
-    <a href="/report">📊 Laporan</a>
-    <a href="/scan">📷 Scan Struk</a>
-    <a href="/groups" class="active">👥 Sharing</a>
+    <a href="/" class="active">🏠 {{ t['nav_home'] }}</a>
+    <a href="/report">📊 {{ t['nav_report'] }}</a>
+    <a href="/scan">📷 {{ t['nav_scan'] }}</a>
+    <a href="/groups" class="active">👥 {{ t['nav_groups'] }}</a>
     <span style="margin-left:auto; font-size:13px; color:#666;">👤 {{ current_user.name }}</span>
-    <a href="/logout" class="btn btn-danger" style="padding:5px 14px;">Logout</a>
+    <a href="/logout" class="btn btn-danger" style="padding:5px 14px;">{{ t['nav_logout'] }}</a>
+    <a href="/settings">⚙️ {{ t['nav_settings'] }}</a>
 </nav>
 <main>
 
@@ -31,34 +32,34 @@
 
         <!-- Buat Grup -->
         <div class="card">
-            <h2>➕ Buat Grup Baru</h2>
+            <h2>➕ {{ t['create_group'] }}</h2>
             <form method="POST" action="/groups/create" style="margin-top:16px;">
                 <div class="form-group">
-                    <label>Nama Grup</label>
+                    <label>{{ t['group_name'] }}</label>
                     <input type="text" name="name" placeholder="Contoh: Kos Bareng, Kel 12" required>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width:100%;">Buat Grup</button>
+                <button type="submit" class="btn btn-primary" style="width:100%;">{{ t['create_group'] }}</button>
             </form>
         </div>
 
         <!-- Join Grup -->
         <div class="card">
-            <h2>🔗 Gabung Grup</h2>
+            <h2>🔗 {{ t['join_group'] }}</h2>
             <p style="font-size:13px; color:#666; margin:8px 0 16px;">Masukkan kode unik dari temanmu</p>
             <form method="POST" action="/groups/join">
                 <div class="form-group">
-                    <label>Kode Grup</label>
+                    <label>{{ t['group_code'] }}</label>
                     <input type="text" name="code" placeholder="Contoh: A1B2C3D4"
                            style="text-transform:uppercase; letter-spacing:2px;" required>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width:100%;">Gabung</button>
+                <button type="submit" class="btn btn-primary" style="width:100%;">{{ t['join_group'] }}</button>
             </form>
         </div>
     </div>
 
     <!-- Daftar Grup -->
     <div class="card">
-        <h2>👥 Grup Kamu</h2>
+        <h2>👥 {{ t['your_groups'] }}</h2>
         {% if groups %}
             <div style="display:grid; gap:12px; margin-top:16px;">
                 {% for group in groups %}
@@ -72,7 +73,7 @@
                             · {{ group.members|length }} anggota
                         </p>
                     </div>
-                    <a href="/groups/{{ group.id }}" class="btn btn-primary">Buka</a>
+                    <a href="/groups/{{ group.id }}" class="btn btn-primary">{{ t['open_group'] }}</a>
                 </div>
                 {% endfor %}
             </div>

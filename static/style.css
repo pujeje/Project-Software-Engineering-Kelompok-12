@@ -254,3 +254,36 @@ td { padding: 12px; border-bottom: 1px solid #f3f4f6; }
 .budget-icon { font-size: 22px; }
 .budget-danger  { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
 .budget-warning { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+
+/* Settings */
+.settings-nav {
+    display: block;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    text-decoration: none;
+    color: #555;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.settings-nav:hover  { background: #f0f4f8; color: #2d6a4f; }
+.settings-nav.active { background: #d1fae5; color: #2d6a4f; font-weight: 500; }
+.settings-nav.danger { color: #dc2626; }
+.settings-nav.danger:hover { background: #fee2e2; }
+
+/* Dark mode */
+[data-theme="dark"] body        { background: #1a1a2e; color: #e2e8f0; }
+[data-theme="dark"] header      { background: #1b4332; }
+[data-theme="dark"] .navbar     { background: #16213e; border-color: #2d3748; }
+[data-theme="dark"] .navbar a   { color: #a0aec0; }
+[data-theme="dark"] .card       { background: #16213e; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+[data-theme="dark"] .card h2    { color: #68d391; }
+[data-theme="dark"] table th    { background: #2d3748; color: #a0aec0; }
+[data-theme="dark"] table td    { border-color: #2d3748; }
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea    { background: #2d3748; border-color: #4a5568;
+                                   color: #e2e8f0; }
+[data-theme="dark"] .summary-card { background: #16213e; }
+[data-theme="dark"] .alert-success { background: #1b4332; color: #68d391; }
+[data-theme="dark"] .alert-danger  { background: #3b1111; color: #fc8181; }
