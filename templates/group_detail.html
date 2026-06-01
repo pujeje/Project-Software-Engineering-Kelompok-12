@@ -1,418 +1,53 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ group.name }} - FinTrack</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-<header>
-    <h1>💰 FinTrack</h1>
-    <p>Mode Sharing — {{ group.name }}</p>
-</header>
-<nav class="navbar">
-    <a href="/">🏠 Beranda</a>
-    <a href="/groups">👥 Sharing</a>
-    <span style="margin-left:auto; font-size:13px; color:#666;">👤 {{ current_user.name }}</span>
-    <a href="/logout" class="btn btn-danger" style="padding:5px 14px;">Logout</a>
-    <a href="/groups/{{ group.id }}/split">🧾 Split Tagihan</a>
-    <a href="/groups/{{ group.id }}/report">📊 Laporan</a>
-</nav>
-<main>
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ group.name }}</h1>
+<p>Kode grup: {{ group.code }}</p>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}{% for category, message in messages %}
-            <div class="alert alert-{{ category }}">{{ message }}</div>
-        {% endfor %}{% endif %}
-    {% endwith %}
-
-    <!-- Info Grup -->
-    <div class="card" style="margin-bottom:20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <div>
-                <h2 style="margin-bottom:4px;">{{ group.name }}</h2>
-                <p style="font-size:13px; color:#888;">
-                    Kode undangan: <strong style="letter-spacing:2px; color:#2d6a4f;">{{ group.code }}</strong>
-                    · Bagikan ke teman untuk bergabung
-                </p>
-            </div>
-        </div>
-        <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
-            {% for m in group.members %}
-            <span style="background:#f0f4f8; padding:4px 12px; border-radius:20px; font-size:12px;">
-                {{ m.user.name }}
-                {% if m.role == 'admin' %}<span style="color:#2d6a4f;"> (admin)</span>{% endif %}
-            </span>
-            {% endfor %}
-        </div>
-    </div>
-
-    <!-- Ringkasan -->
-    <div class="summary-grid" style="margin-bottom:20px;">
-        <div class="card summary-card income">
-            <p class="label">Total Pemasukan</p>
-            <p class="amount">Rp {{ "{:,.0f}".format(total_income) }}</p>
-        </div>
-        <div class="card summary-card expense">
-            <p class="label">Total Pengeluaran</p>
-            <p class="amount">Rp {{ "{:,.0f}".format(total_expense) }}</p>
-        </div>
-        <div class="card summary-card balance">
-            <p class="label">Saldo Grup</p>
-            <p class="amount">Rp {{ "{:,.0f}".format(balance) }}</p>
-        </div>
-    </div>
-
-    <div style="display:grid; grid-template-columns:2fr 1fr; gap:20px;">
-        <div>
-
-            <!-- Dana / Pos Keuangan -->
-            <div class="card" style="margin-bottom:20px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                    <h2>💰 Dana / Pos Keuangan</h2>
-                    <button class="btn btn-secondary" onclick="toggleForm('fund-form')">+ Tambah Dana</button>
-                </div>
-
-                <!-- Form tambah dana -->
-                <div id="fund-form" style="display:none; margin-bottom:16px; padding:16px;
-                     background:#f9fafb; border-radius:8px;">
-                    <form method="POST" action="/groups/{{ group.id }}/fund/add"
-                          style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
-                        <div class="form-group" style="margin:0; flex:1; min-width:140px;">
-                            <label>Nama Dana</label>
-                            <input type="text" name="fund_name" placeholder="Contoh: Dana Beras" required>
-                        </div>
-                        <div class="form-group" style="margin:0; flex:1; min-width:120px;">
-                            <label>Target (Rp)</label>
-                            <input type="number" name="fund_target" placeholder="Opsional" min="0">
-                        </div>
-                        <div class="form-group" style="margin:0; flex:2; min-width:160px;">
-                            <label>Deskripsi</label>
-                            <input type="text" name="fund_desc" placeholder="Opsional">
-                        </div>
-                        <button type="submit" class="btn btn-primary">Simpan</button>
-                    </form>
-                </div>
-
-                {% if funds %}
-    <div style="display:grid; gap:10px;">
-        {% for fund in funds %}
-        {% set fund_expense = fund.transactions|selectattr('type','equalto','expense')|sum(attribute='amount') %}
-        {% set fund_income  = fund.transactions|selectattr('type','equalto','income')|sum(attribute='amount') %}
-        {% set fund_balance = fund_income - fund_expense %}
-        {% set pct = (fund_expense / fund.target * 100) if fund.target > 0 else 0 %}
-
-        <div style="padding:14px; border:0.5px solid var(--color-border-tertiary); border-radius:10px;">
-
-            <!-- Header dana -->
-            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                <div>
-                    <strong style="font-size:14px;">{{ fund.name }}</strong>
-                    {% if fund.description %}
-                        <p style="font-size:12px; color:#888; margin:2px 0;">{{ fund.description }}</p>
-                    {% endif %}
-                </div>
-                <div style="display:flex; gap:6px;">
-                    <button class="btn btn-edit"
-                            onclick="toggleForm('edit-fund-{{ fund.id }}')">Edit</button>
-                    <a href="/groups/{{ group.id }}/fund/delete/{{ fund.id }}"
-                       class="btn btn-danger"
-                       onclick="return confirm('Yakin hapus dana ini?')">Hapus</a>
-                </div>
-            </div>
-
-            <!-- Info saldo dana -->
-            <div style="display:flex; gap:16px; margin:10px 0; font-size:13px;">
-                <span style="color:#2d6a4f;">
-                    Masuk: Rp {{ "{:,.0f}".format(fund_income) }}
-                </span>
-                <span style="color:#dc2626;">
-                    Keluar: Rp {{ "{:,.0f}".format(fund_expense) }}
-                </span>
-                <span style="font-weight:500;">
-                    Saldo: Rp {{ "{:,.0f}".format(fund_balance) }}
-                </span>
-                {% if fund.target > 0 %}
-                <span style="color:#888;">
-                    Target: Rp {{ "{:,.0f}".format(fund.target) }}
-                </span>
-                {% endif %}
-            </div>
-
-            <!-- Progress bar -->
-            {% if fund.target > 0 %}
-            <div class="progress-bar-bg">
-                <div class="progress-bar-fill {{ 'fill-danger' if pct >= 100 else 'fill-safe' }}"
-                     style="width:{{ [pct, 100]|min }}%"></div>
-            </div>
-            <p style="font-size:11px; color:#888; margin-top:4px;">
-                {{ "{:.0f}".format(pct) }}% dari target
-            </p>
-            {% endif %}
-
-            <!-- Form edit dana (tersembunyi) -->
-            <div id="edit-fund-{{ fund.id }}" style="display:none; margin-top:12px;
-                 padding:12px; background:#f9fafb; border-radius:8px;">
-                <form method="POST"
-                      action="/groups/{{ group.id }}/fund/edit/{{ fund.id }}"
-                      style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
-                    <div class="form-group" style="margin:0; flex:1; min-width:130px;">
-                        <label>Nama Dana</label>
-                        <input type="text" name="fund_name"
-                               value="{{ fund.name }}" required>
-                    </div>
-                    <div class="form-group" style="margin:0; flex:1; min-width:110px;">
-                        <label>Target (Rp)</label>
-                        <input type="number" name="fund_target"
-                               value="{{ fund.target | int }}" min="0">
-                    </div>
-                    <div class="form-group" style="margin:0; flex:2; min-width:150px;">
-                        <label>Deskripsi</label>
-                        <input type="text" name="fund_desc"
-                               value="{{ fund.description or '' }}">
-                    </div>
-                    <button type="submit" class="btn btn-primary">Simpan</button>
-                </form>
-            </div>
-
-        </div>
-        {% endfor %}
-    </div>
-{% else %}
-    <p class="empty-msg">Belum ada dana. Tambahkan pos keuangan dulu!</p>
-{% endif %}
-
-            <!-- Tambah Transaksi -->
-            <div class="card" style="margin-bottom:20px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                    <h2>➕ Tambah Transaksi</h2>
-                    <button class="btn btn-secondary" onclick="toggleForm('trans-form')">Tambah</button>
-                </div>
-                <div id="trans-form" style="display:none;">
-                    <form method="POST" action="/groups/{{ group.id }}/add">
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                            <div class="form-group">
-                                <label>Judul</label>
-                                <input type="text" name="title" placeholder="Beli beras" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Jumlah (Rp)</label>
-                                <input type="number" name="amount" placeholder="50000" min="0" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Tipe</label>
-                                <select name="type">
-                                    <option value="expense">Pengeluaran</option>
-                                    <option value="income">Pemasukan</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Kategori</label>
-                                <select name="category">
-                                    {% for cat in ['Makanan','Transport','Belanja','Hiburan','Kesehatan','Pendidikan','Lainnya'] %}
-                                    <option value="{{ cat }}">{{ cat }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Tanggal</label>
-                                <input type="date" name="date" value="{{ now.strftime('%Y-%m-%d') }}">
-                            </div>
-                            <div class="form-group">
-                                <label>Masuk ke Dana (opsional)</label>
-                                <select name="fund_id">
-                                    <option value="">— Tidak ada —</option>
-                                    {% for fund in funds %}
-                                    <option value="{{ fund.id }}">{{ fund.name }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>Catatan</label>
-                            <input type="text" name="note" placeholder="Opsional">
-                        </div>
-                        <button type="submit" class="btn btn-primary">Simpan Transaksi</button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Filter -->
-<div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
-    <select id="filter-fund" onchange="filterTable()"
-            style="padding:7px 12px; border:0.5px solid #d1d5db;
-                   border-radius:8px; font-size:13px;">
-        <option value="">Semua Dana</option>
-        {% for fund in funds %}
-        <option value="{{ fund.name }}">{{ fund.name }}</option>
-        {% endfor %}
-        <option value="—">Tanpa Dana</option>
-    </select>
-
-    <select id="filter-type" onchange="filterTable()"
-            style="padding:7px 12px; border:0.5px solid #d1d5db;
-                   border-radius:8px; font-size:13px;">
-        <option value="">Semua Tipe</option>
-        <option value="Pemasukan">Pemasukan</option>
-        <option value="Pengeluaran">Pengeluaran</option>
-    </select>
-
-    <select id="filter-member" onchange="filterTable()"
-            style="padding:7px 12px; border:0.5px solid #d1d5db;
-                   border-radius:8px; font-size:13px;">
-        <option value="">Semua Anggota</option>
-        {% for m in group.members %}
-        <option value="{{ m.user.name }}">{{ m.user.name }}</option>
-        {% endfor %}
-    </select>
-
-    <button onclick="resetFilter()"
-            class="btn btn-secondary" style="font-size:13px;">
-        Reset Filter
-    </button>
+<div class="summary-grid">
+  <div class="card summary-card income">
+    <p class="label">{{ t['total_income'] }}</p>
+    <p class="amount">Rp {{ "{:,.0f}".format(total_income) }}</p>
+  </div>
+  <div class="card summary-card expense">
+    <p class="label">{{ t['total_expense'] }}</p>
+    <p class="amount">Rp {{ "{:,.0f}".format(total_expense) }}</p>
+  </div>
+  <div class="card summary-card balance">
+    <p class="label">{{ t['balance'] }}</p>
+    <p class="amount">Rp {{ "{:,.0f}".format(balance) }}</p>
+  </div>
 </div>
 
-            <!-- Riwayat Transaksi -->
-            <div class="card">
-                <h2>📋 Riwayat Transaksi Grup</h2>
-                {% if transactions %}
-                <table id="trans-table" style="margin-top:16px;">
-                    <thead>
-                        <tr>
-                            <th>Tanggal</th>
-                            <th>Judul</th>
-                            <th>Oleh</th>
-                            <th>Dana</th>
-                            <th>Tipe</th>
-                            <th>Jumlah</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for t in transactions %}
-                        <tr>
-                            <td>{{ t.date.strftime('%d/%m/%Y') }}</td>
-                            <td>{{ t.title }}</td>
-                            <td style="font-size:12px; color:#666;">{{ t.user.name }}</td>
-                            <td style="font-size:12px; color:#666;">{{ t.fund.name if t.fund else '—' }}</td>
-                            <td>
-                                <span class="badge {{ 'badge-income' if t.type == 'income' else 'badge-expense' }}">
-                                    {{ 'Pemasukan' if t.type == 'income' else 'Pengeluaran' }}
-                                </span>
-                            </td>
-                            <td class="{{ 'text-income' if t.type == 'income' else 'text-expense' }}">
-                                Rp {{ "{:,.0f}".format(t.amount) }}
-                            </td>
-                            <td>
-                                <a href="/groups/{{ group.id }}/delete/{{ t.id }}"
-                                   class="btn btn-danger"
-                                   onclick="return confirm('Yakin hapus?')">Hapus</a>
-                            </td>
-                            <td style="display:flex; gap:6px;">
-                                <a href="/groups/{{ group.id }}/edit/{{ t.id }}"
-                                    class="btn btn-edit">Edit</a>
-                                <a href="/groups/{{ group.id }}/delete/{{ t.id }}"
-                                    class="btn btn-danger"
-                                    onclick="return confirm('Yakin hapus?')">Hapus</a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
-                    <p class="empty-msg">Belum ada transaksi di grup ini.</p>
-                {% endif %}
-            </div>
+<div class="card">
+  <h2>{{ t['members'] }}</h2>
+  <ul>
+    {% for m in members %}
+      <li>{{ m.user.name }} ({{ m.role }})</li>
+    {% endfor %}
+  </ul>
+</div>
 
-        </div>
-
-        <!-- Activity Log -->
-        <div>
-            <div class="card" style="position:sticky; top:20px;">
-                <h2>📜 Activity Log</h2>
-                <p style="font-size:12px; color:#888; margin:4px 0 16px;">
-                    Riwayat aktivitas anggota
-                </p>
-
-            {% if logs %}
-            <div style="display:flex; flex-direction:column; gap:8px;
-                    max-height:500px; overflow-y:auto;">
-            {% for log in logs %}
-            <div style="padding:10px 12px; background:#f9fafb;
-                        border-radius:8px; border-left:3px solid
-                        {% if 'menghapus' in log.action %}#dc2626
-                        {% elif 'mengedit' in log.action %}#f59e0b
-                        {% elif 'membuat' in log.action or 'menambahkan' in log.action %}#2d6a4f
-                        {% else %}#6b7280{% endif %};">
-                <div style="display:flex; justify-content:space-between;
-                            align-items:flex-start; gap:8px;">
-                    <div>
-                        <p style="font-size:13px; font-weight:500;
-                                  margin-bottom:2px;">
-                            {{ log.user.name }}
-                        </p>
-                        <p style="font-size:12px; color:#555;">
-                            {{ log.action }}
-                        </p>
-                    </div>
-                    <span style="font-size:10px; color:#aaa;
-                                 white-space:nowrap; margin-top:2px;">
-                        {{ log.created_at.strftime('%d/%m %H:%M') }}
-                    </span>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-
-        <p style="font-size:11px; color:#aaa; text-align:center;
-                  margin-top:12px;">
-            Menampilkan 20 aktivitas terakhir
-        </p>
+<div class="card">
+  <h2>{{ t['transactions'] }}</h2>
+  <ul>
+    {% for t in transactions %}
+      <li>{{ t.date.strftime('%d/%m/%Y') }} - {{ t.title }} - Rp {{ "{:,.0f}".format(t.amount) }}</li>
     {% else %}
-        <p class="empty-msg">Belum ada aktivitas.</p>
-    {% endif %}
+      <li>{{ t['no_transaction'] }}</li>
+    {% endfor %}
+  </ul>
 </div>
-        </div>
 
-    </div>
-</main>
+<div class="card">
+  <h2>{{ t['funds'] }}</h2>
+  <ul>
+    {% for f in funds %}
+      <li>{{ f.name }} (Target: Rp {{ "{:,.0f}".format(f.target) }})</li>
+    {% else %}
+      <li>{{ t['no_funds'] }}</li>
+    {% endfor %}
+  </ul>
+</div>
 
-<script>
-function toggleForm(id) {
-    const el = document.getElementById(id);
-    el.style.display = el.style.display === 'none' ? 'block' : 'none';
-}
-</script>
-
-<script>
-function filterTable() {
-    const fund   = document.getElementById('filter-fund').value.toLowerCase();
-    const type   = document.getElementById('filter-type').value.toLowerCase();
-    const member = document.getElementById('filter-member').value.toLowerCase();
-    const rows   = document.querySelectorAll('#trans-table tbody tr');
-
-    rows.forEach(row => {
-        const cells      = row.querySelectorAll('td');
-        const rowFund    = cells[3].textContent.trim().toLowerCase();
-        const rowType    = cells[4].textContent.trim().toLowerCase();
-        const rowMember  = cells[2].textContent.trim().toLowerCase();
-
-        const matchFund   = !fund   || rowFund   === fund;
-        const matchType   = !type   || rowType.includes(type);
-        const matchMember = !member || rowMember === member;
-
-        row.style.display = matchFund && matchType && matchMember ? '' : 'none';
-    });
-}
-
-function resetFilter() {
-    document.getElementById('filter-fund').value   = '';
-    document.getElementById('filter-type').value   = '';
-    document.getElementById('filter-member').value = '';
-    filterTable();
-}
-</script>
-
-</body>
-</html>
+<a href="{{ url_for('group_report', id=group.id) }}" class="btn btn-primary">{{ t['view_report'] }}</a>
+{% endblock %}

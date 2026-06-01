@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Selamat datang di FinTrack</h1>
+<p>{{ t['landing_text'] }}</p>
+<div class="action-bar">
+  <a href="{{ url_for('login') }}" class="btn btn-primary">{{ t['login'] }}</a>
+  <a href="{{ url_for('register') }}" class="btn btn-secondary">{{ t['register'] }}</a>
+</div>
+{% endblock %}
