@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <script>
+    (function(){
+        var t = localStorage.getItem('fintrack_theme') || 'light';
+        document.documentElement.setAttribute('data-theme', t);
+    })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scan Struk Grup - {{ group.name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<header>
+    <h1>💰 FinTrack</h1>
+    <p>Mode Sharing — {{ group.name }}</p>
+</header>
+
+{% set active = 'detail' %}
+<nav class="navbar">
+    <a href="/groups" class="nav-back">← {{ t['nav_sharing'] }}</a>
+    <div class="nav-divider"></div>
+    <a href="/groups/{{ group.id }}" class="nav-link">📋 Transaksi</a>
+    <a href="/groups/{{ group.id }}/split" class="nav-link">🧾 Split Tagihan</a>
+    <a href="/groups/{{ group.id }}/report" class="nav-link">📊 Laporan</a>
+    <div class="nav-right">
+        <div class="user-chip">
+            <div class="user-avatar">
+                {% if current_user.photo %}
+                    <img src="{{ url_for('static', filename='uploads/' + current_user.photo) }}" alt="foto">
+                {% else %}
+                    👤
+                {% endif %}
+            </div>
+            <span>{{ current_user.name }}</span>
+        </div>
+        <button class="theme-toggle" onclick="toggleTheme()">
+            <span class="theme-icon">☀️</span>
+        </button>
+        <a href="/logout" class="btn-logout">Logout</a>
+    </div>
+</nav>
+
+<main>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}{% endif %}
+    {% endwith %}
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+
+        <!-- Form Upload -->
+        <div class="card">
+            <h2>📷 Scan Struk Transaksi Grup</h2>
+            <p style="font-size:13px; color:var(--text-muted); margin:6px 0 20px;">
+                Upload foto struk, total dan item akan otomatis terdeteksi.
+            </p>
+
+            <form method="POST"
+                  action="/groups/{{ group.id }}/scan"
+                  enctype="multipart/form-data">
+
+                <div class="form-group">
+                    <label>Upload Foto Struk</label>
+                    <input type="file" name="receipt"
+                           accept="image/*" required
+                           onchange="previewImage(this)">
+                </div>
+
+                <div id="preview-box" style="display:none; margin-bottom:16px;">
+                    <img id="preview-img" src=""
+                         style="max-width:100%; max-height:260px;
+                                border-radius:10px;
+                                border:1px solid var(--border);">
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width:100%;">
+                    🔍 Scan Struk
+                </button>
+            </form>
+
+            <div style="margin-top:16px; text-align:center;">
+                <a href="/groups/{{ group.id }}" class="btn btn-secondary" style="width:100%;">
+                    ✏️ Input Manual
+                </a>
+            </div>
+        </div>
+
+        <!-- Hasil Scan -->
+        <div class="card">
+            {% if result %}
+            <h2>✅ Hasil Scan — Konfirmasi</h2>
+            <p style="font-size:13px; color:var(--text-muted); margin:6px 0 20px;">
+                Cek dan sesuaikan data hasil scan sebelum disimpan.
+            </p>
+
+            <form method="POST" action="/groups/{{ group.id }}/add">
+                <div class="form-group">
+                    <label>Judul</label>
+                    <input type="text" name="title"
+                           value="{{ result.title }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Jumlah (Rp)</label>
+                    <input type="number" name="amount"
+                           value="{{ result.amount }}" min="0" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Tanggal</label>
+                    <input type="date" name="date"
+                           value="{{ result.date }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Tipe</label>
+                    <select name="type">
+                        <option value="expense" selected>Pengeluaran</option>
+                        <option value="income">Pemasukan</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Kategori</label>
+                    <select name="category">
+                        {% for cat in ['Makanan','Transport','Belanja','Hiburan','Kesehatan','Pendidikan','Lainnya'] %}
+                        <option value="{{ cat }}"
+                            {{ 'selected' if result.category == cat }}>
+                            {{ cat }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Dana / Pos Keuangan (opsional)</label>
+                    <select name="fund_id">
+                        <option value="">— Tidak ada —</option>
+                        {% for fund in funds %}
+                        <option value="{{ fund.id }}">{{ fund.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Catatan (item terdeteksi)</label>
+                    <textarea name="note">{{ result.note }}</textarea>
+                </div>
+
+                <div class="form-actions">
+                    <a href="/groups/{{ group.id }}/scan" class="btn btn-secondary">
+                        📷 Scan Ulang
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        💾 Simpan Transaksi
+                    </button>
+                </div>
+            </form>
+
+            {% else %}
+            <!-- Belum scan -->
+            <div style="display:flex; flex-direction:column; align-items:center;
+                        justify-content:center; height:100%; padding:48px 20px;
+                        text-align:center; gap:12px;">
+                <span style="font-size:48px;">📷</span>
+                <p style="font-weight:600; color:var(--text);">Belum ada hasil scan</p>
+                <p style="font-size:13px; color:var(--text-muted);">
+                    Upload foto struk di sebelah kiri,<br>
+                    hasil scan akan muncul di sini.
+                </p>
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+</main>
+
+<script>
+function previewImage(input) {
+    const box = document.getElementById('preview-box');
+    const img = document.getElementById('preview-img');
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            img.src = e.target.result;
+            box.style.display = 'block';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function toggleTheme() {
+    var html = document.documentElement;
+    var isDark = html.getAttribute('data-theme') === 'dark';
+    var next = isDark ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('fintrack_theme', next);
+    document.querySelectorAll('.theme-icon').forEach(function(el) {
+        el.textContent = next === 'dark' ? '🌙' : '☀️';
+    });
+}
+
+var savedTheme = localStorage.getItem('fintrack_theme') || 'light';
+document.documentElement.setAttribute('data-theme', savedTheme);
+document.querySelectorAll('.theme-icon').forEach(function(el) {
+    el.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+});
+</script>
+
+</body>
+</html>

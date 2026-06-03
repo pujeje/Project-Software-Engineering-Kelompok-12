@@ -2,6 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tambah Transaksi - FinTrack</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
@@ -82,5 +83,26 @@
     </div>
 </main>
 
+<script>
+function toggleTheme() {
+    const html = document.documentElement;
+    const isDark = html.getAttribute('data-theme') === 'dark';
+    const next = isDark ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    updateThemeIcon();
+}
+function updateThemeIcon() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const icons = document.querySelectorAll('.theme-icon');
+    icons.forEach(i => i.textContent = isDark ? '🌙' : '☀️');
+}
+// Load saved theme on page load
+(function() {
+    const saved = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', saved);
+    document.addEventListener('DOMContentLoaded', updateThemeIcon);
+})();
+</script>
 </body>
 </html>

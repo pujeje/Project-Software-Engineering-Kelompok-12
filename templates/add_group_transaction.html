@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tambah Transaksi Grup</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="container">
+  <h2>Tambah Transaksi Grup</h2>
+
+  <!-- Pilih mode -->
+  <form method="POST" enctype="multipart/form-data">
+    <div class="form-group">
+      <label>Pilih Mode</label>
+      <select name="mode" onchange="toggleMode(this.value)">
+        <option value="manual">Manual</option>
+        <option value="scan">Scan Struk</option>
+      </select>
+    </div>
+
+    <!-- Form manual -->
+    <div id="manual-form">
+      <div class="form-group">
+        <label>Judul</label>
+        <input type="text" name="title" required>
+      </div>
+      <div class="form-group">
+        <label>Kategori</label>
+        <input type="text" name="category" required>
+      </div>
+      <div class="form-group">
+        <label>Tipe</label>
+        <select name="type">
+          <option value="income">Income</option>
+          <option value="expense">Expense</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Jumlah</label>
+        <input type="number" name="amount" required>
+      </div>
+    </div>
+
+    <!-- Form scan -->
+    <div id="scan-form" style="display:none;">
+      <div class="form-group">
+        <label>Upload Struk</label>
+        <input type="file" name="receipt" accept="image/*">
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Tambah</button>
+  </form>
+</div>
+
+<script>
+function toggleMode(val) {
+  document.getElementById('manual-form').style.display = (val === 'manual') ? 'block' : 'none';
+  document.getElementById('scan-form').style.display   = (val === 'scan') ? 'block' : 'none';
+}
+</script>
+
+</body>
+</html>

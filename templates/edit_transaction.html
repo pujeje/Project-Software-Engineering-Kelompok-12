@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" id="html-root">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,8 +14,27 @@
 </header>
 
 <nav class="navbar">
-    <a href="/">🏠 Beranda</a>
-    <a href="/report">📊 Laporan</a>
+    <a href="/index" class="nav-link active">🏠 {{ t['nav_home'] }}</a>
+    <a href="/report" class="nav-link">📊 {{ t['nav_report'] }}</a>
+    <a href="/scan" class="nav-link">📷 {{ t['nav_scan'] }}</a>
+    <a href="/groups" class="nav-link">👥 {{ t['nav_sharing'] }}</a>
+    <a href="/settings" class="nav-link">⚙️ {{ t['nav_settings'] }}</a>
+    <div class="nav-right">
+        <div class="user-chip">
+            <div class="user-avatar">
+                {% if current_user.photo %}
+                    <img src="{{ url_for('static', filename='uploads/' + current_user.photo) }}" alt="foto">
+                {% else %}
+                    👤
+                {% endif %}
+            </div>
+            <span>{{ current_user.name }}</span>
+        </div>
+        <button class="theme-toggle" onclick="toggleTheme()">
+            <span class="theme-icon">☀️</span>
+        </button>
+        <a href="/logout" class="btn-logout">{{ t['nav_logout'] }}</a>
+    </div>
 </nav>
 
 <main>

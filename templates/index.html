@@ -1,6 +1,48 @@
-{% extends "base.html" %}
-{% block content %}
-<h1>{{ t['welcome'] }}, {{ current_user.name }}</h1>
+<!DOCTYPE html>
+<html lang="id" id="html-root">
+<head>
+    <meta charset="UTF-8">
+    <script>
+(function(){
+    var t = localStorage.getItem('fintrack_theme') || 'light';
+    document.documentElement.setAttribute('data-theme', t);
+})();
+</script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinTrack</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<header>
+    <h1>💰 FinTrack</h1>
+    <p>Kelola keuanganmu dengan mudah</p>
+</header>
+
+<nav class="navbar">
+    <a href="/index" class="nav-link active">🏠 {{ t['nav_home'] }}</a>
+    <a href="/report" class="nav-link">📊 {{ t['nav_report'] }}</a>
+    <a href="/scan" class="nav-link">📷 {{ t['nav_scan'] }}</a>
+    <a href="/groups" class="nav-link">👥 {{ t['nav_sharing'] }}</a>
+    <a href="/settings" class="nav-link">⚙️ {{ t['nav_settings'] }}</a>
+    <div class="nav-right">
+        <div class="user-chip">
+            <div class="user-avatar">
+                {% if current_user.photo %}
+                    <img src="{{ url_for('static', filename='uploads/' + current_user.photo) }}" alt="foto">
+                {% else %}
+                    👤
+                {% endif %}
+            </div>
+            <span>{{ current_user.name }}</span>
+        </div>
+        <button class="theme-toggle" onclick="toggleTheme()">
+            <span class="theme-icon">☀️</span>
+        </button>
+        <a href="/logout" class="btn-logout">{{ t['nav_logout'] }}</a>
+    </div>
+</nav>
+
 <main>
 
     <!-- Flash messages -->
@@ -13,91 +55,117 @@
     {% endwith %}
 
     <!-- Budget Warning -->
-    {% if budget_status %}
-        {% if budget_status.status == 'danger' %}
-        <div class="budget-alert budget-danger">
-            <span class="budget-icon">🚨</span>
-            <div>
-                <strong>Budget Habis!</strong>
-                <p>{{ budget_status.message }}</p>
-            </div>
+{% if budget_status %}
+    {% if budget_status.status == 'danger' %}
+    <div class="budget-alert budget-danger">
+        <span class="budget-icon">🚨</span>
+        <div>
+            <strong>Budget Habis!</strong>
+            <p>{{ budget_status.message }}</p>
         </div>
-        {% elif budget_status.status == 'warning' %}
-        <div class="budget-alert budget-warning">
-            <span class="budget-icon">⚠️</span>
-            <div>
-                <strong>Peringatan Budget!</strong>
-                <p>{{ budget_status.message }}</p>
-            </div>
-        </div>
-        {% endif %}
-    {% endif %}
-
-    <!-- Budget Progress -->
-    {% if budget_status %}
-    <div class="card budget-card">
-        <div class="budget-header">
-            <div>
-                <h3>Budget {{ budget_status.period_label }}</h3>
-                <p class="budget-sub">
-                    Rp {{ "{:,.0f}".format(budget_status.total_expense) }}
-                    dari Rp {{ "{:,.0f}".format(budget_status.amount) }}
-                </p>
-            </div>
-            <button class="btn btn-secondary" onclick="toggleBudgetForm()">
-                ✏️ Ubah Budget
-            </button>
-        </div>
-
-        <!-- Progress bar -->
-        <div class="progress-bar-bg">
-            <div class="progress-bar-fill
-                {% if budget_status.percentage >= 100 %}fill-danger
-                {% elif budget_status.percentage >= 90 %}fill-warning
-                {% else %}fill-safe{% endif %}"
-                style="width: {{ budget_status.percentage }}%">
-            </div>
-        </div>
-
-        <div class="budget-footer">
-            <span class="{{ 'text-expense' if budget_status.remaining <= 0 else '' }}">
-                {% if budget_status.remaining > 0 %}
-                    Sisa: Rp {{ "{:,.0f}".format(budget_status.remaining) }}
-                {% else %}
-                    Melebihi budget: Rp {{ "{:,.0f}".format(budget_status.remaining * -1) }}
-                {% endif %}
-            </span>
-            <span>{{ "{:.0f}".format(budget_status.percentage) }}%</span>
+    </div>
+    {% elif budget_status.status == 'warning' %}
+    <div class="budget-alert budget-warning">
+        <span class="budget-icon">⚠️</span>
+        <div>
+            <strong>Peringatan Budget!</strong>
+            <p>{{ budget_status.message }}</p>
         </div>
     </div>
     {% endif %}
+{% endif %}
 
-    <!-- Form Set Budget (tersembunyi) -->
-    <div id="budget-form" style="display:none;">
-        <div class="card form-card" style="max-width:100%;">
-            <h3 style="margin-bottom:16px;">⚙️ Atur Budget</h3>
-            <form method="POST" action="/budget" style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
-                <div class="form-group" style="margin:0; flex:1; min-width:150px;">
-                    <label>{{ t['budget_amount'] }} (Rp)</label>
-                    <input type="number" name="amount" placeholder="Contoh: 500000" min="0"
-                           value="{{ budget.amount | int if budget else '' }}" required>
-                </div>
-                <div class="form-group" style="margin:0; flex:1; min-width:150px;">
-                    <label>{{ t['period'] }}</label>
-                    <select name="period">
-                        <option value="daily"   {{ 'selected' if budget and budget.period == 'daily' }}>Harian</option>
-                        <option value="weekly"  {{ 'selected' if budget and budget.period == 'weekly' }}>Mingguan</option>
-                        <option value="monthly" {{ 'selected' if budget and budget.period == 'monthly' }}>Bulanan</option>
-                    </select>
-                </div>
-                <div style="margin-bottom:0;">
-                    <button type="submit" class="btn btn-primary">{{ t['save_budget'] }}</button>
-                </div>
-            </form>
+<!-- Budget Progress -->
+{% if budget_status %}
+<div class="card budget-card">
+    <div class="budget-header">
+        <div>
+            <h3>Budget {{ budget_status.period_label }}</h3>
+            <p class="budget-sub">
+                Rp {{ "{:,.0f}".format(budget_status.total_expense) }}
+                dari Rp {{ "{:,.0f}".format(budget_status.amount) }}
+            </p>
+        </div>
+        <button class="btn btn-secondary" onclick="toggleBudgetForm()">
+            ✏️ Ubah Budget
+        </button>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="progress-bar-bg">
+        <div class="progress-bar-fill
+            {% if budget_status.percentage >= 100 %}fill-danger
+            {% elif budget_status.percentage >= 90 %}fill-warning
+            {% else %}fill-safe{% endif %}"
+            style="width: {{ budget_status.percentage }}%">
         </div>
     </div>
 
-    <!-- Ringkasan -->
+    <div class="budget-footer">
+        <span class="{{ 'text-expense' if budget_status.remaining <= 0 else '' }}">
+            {% if budget_status.remaining > 0 %}
+                Sisa: Rp {{ "{:,.0f}".format(budget_status.remaining) }}
+            {% else %}
+                Melebihi budget: Rp {{ "{:,.0f}".format(budget_status.remaining * -1) }}
+            {% endif %}
+        </span>
+        <span>{{ "{:.0f}".format(budget_status.percentage) }}%</span>
+    </div>
+</div>
+{% endif %}
+
+<!-- Form Set Budget (tersembunyi) -->
+<div id="budget-form" style="display:none;">
+    <div class="card form-card" style="max-width:100%;">
+        <h3 style="margin-bottom:16px;">⚙️ Atur Budget</h3>
+        <form method="POST" action="/budget" style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
+            <div class="form-group" style="margin:0; flex:1; min-width:150px;">
+                <label>{{ t['budget_amount'] }} (Rp)</label>
+                <input type="number" name="amount" placeholder="Contoh: 500000" min="0"
+                       value="{{ budget.amount | int if budget else '' }}" required>
+            </div>
+            <div class="form-group" style="margin:0; flex:1; min-width:150px;">
+                <label>{{ t['period'] }}</label>
+                <select name="period">
+                    <option value="daily"   {{ 'selected' if budget and budget.period == 'daily' }}>Harian</option>
+                    <option value="weekly"  {{ 'selected' if budget and budget.period == 'weekly' }}>Mingguan</option>
+                    <option value="monthly" {{ 'selected' if budget and budget.period == 'monthly' }}>Bulanan</option>
+                </select>
+            </div>
+            <div style="margin-bottom:0;">
+                <button type="submit" class="btn btn-primary">{{ t['save_budget'] }}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if not budget_status %}
+<div class="card budget-card" style="text-align:center; padding:20px;">
+    <p style="color:#666; margin-bottom:12px;">{{ t['no_budget_set'] }}</p>
+    <button class="btn btn-primary" onclick="toggleBudgetForm()">+ {{ t['set_budget'] }}</button>
+    <div id="budget-form" style="display:none; margin-top:16px; text-align:left;">
+        <form method="POST" action="/budget" style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
+            <div class="form-group" style="margin:0; flex:1; min-width:150px;">
+                <label>{{ t['budget_amount'] }} (Rp)</label>
+                <input type="number" name="amount" placeholder="Contoh: 500000" min="0" required>
+            </div>
+            <div class="form-group" style="margin:0; flex:1; min-width:150px;">
+                <label>{{ t['period'] }}</label>
+                <select name="period">
+                    <option value="daily">{{ t['daily'] }}</option>
+                    <option value="weekly">{{ t['weekly'] }}</option>
+                    <option value="monthly">{{ t['monthly'] }}</option>
+                </select>
+            </div>
+            <div>
+                <button type="submit" class="btn btn-primary">{{ t['save'] }}</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+    <!-- Kartu Ringkasan -->
     <div class="summary-grid">
         <div class="card summary-card income">
             <p class="label">{{ t['total_income'] }}</p>
@@ -134,27 +202,26 @@
                 </tr>
             </thead>
             <tbody>
-                {% for t in transactions %}
-                <tr>
-                    <td>{{ t.date.strftime('%d/%m/%Y') }}</td>
-                    <td>{{ t.title }}</td>
-                    <td>{{ t.category }}</td>
-                    <td>
-                        <span class="badge {{ 'badge-income' if t.type == 'income' else 'badge-expense' }}">
-                            {{ t['income'] if t.type == 'income' else t['expense'] }}
-                        </span>
-                    </td>
-                    <td class="{{ 'text-income' if t.type == 'income' else 'text-expense' }}">
-                        Rp {{ "{:,.0f}".format(t.amount) }}
-                    </td>
-                    <td style="display: flex; gap: 8px;">
-                        <a href="/edit/{{ t.id }}" class="btn btn-edit">Edit</a>
-<a href="/delete/{{ t.id }}" class="btn btn-danger"
-   onclick="return confirm('Yakin mau hapus?')">Hapus</a>
-
-                    </td>
-                </tr>
-                {% endfor %}
+                {% for trx in transactions %}
+<tr>
+    <td>{{ trx.date.strftime('%d/%m/%Y') }}</td>
+    <td>{{ trx.title }}</td>
+    <td>{{ trx.category }}</td>
+    <td>
+        <span class="badge {{ 'badge-income' if trx.type == 'income' else 'badge-expense' }}">
+            {{ t['income'] if trx.type == 'income' else t['expense'] }}
+        </span>
+    </td>
+    <td class="{{ 'text-income' if trx.type == 'income' else 'text-expense' }}">
+        Rp {{ "{:,.0f}".format(trx.amount) }}
+    </td>
+    <td style="display:flex; gap:6px;">
+        <a href="/edit/{{ trx.id }}" class="btn btn-edit">✏️ {{ t['edit'] }}</a>
+        <a href="/delete/{{ trx.id }}" class="btn btn-danger"
+           onclick="return confirm('Yakin mau hapus?')">🗑 {{ t['delete'] }}</a>
+    </td>
+</tr>
+{% endfor %}
             </tbody>
         </table>
         {% else %}
@@ -169,5 +236,28 @@
         const form = document.getElementById('budget-form');
         form.style.display = form.style.display === 'none' ? 'block' : 'none';
     }
+    </script>
+
+<script>
+function toggleTheme() {
+    var html = document.documentElement;
+    var isDark = html.getAttribute('data-theme') === 'dark';
+    var next = isDark ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('fintrack_theme', next);
+    // Update ikon langsung setelah toggle
+    document.querySelectorAll('.theme-icon').forEach(function(el) {
+        el.textContent = next === 'dark' ? '🌙' : '☀️';
+    });
+}
+
+// Set ikon yang benar saat halaman pertama dibuka
+var savedTheme = localStorage.getItem('fintrack_theme') || 'light';
+document.documentElement.setAttribute('data-theme', savedTheme);
+document.querySelectorAll('.theme-icon').forEach(function(el) {
+    el.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+});
 </script>
-{% endblock %}
+
+</body>
+</html>

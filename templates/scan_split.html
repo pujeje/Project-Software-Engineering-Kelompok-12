@@ -2,6 +2,12 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <script>
+(function(){
+    var t = localStorage.getItem('fintrack_theme') || 'light';
+    document.documentElement.setAttribute('data-theme', t);
+})();
+</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scan Struk Split - {{ group.name }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
@@ -11,15 +17,29 @@
     <h1>💰 FinTrack</h1>
     <p>Mode Sharing — {{ group.name }}</p>
 </header>
+{% set active = 'split' %}
 <nav class="navbar">
-    <a href="/">🏠 Beranda</a>
-    <a href="/groups">👥 Sharing</a>
-    <a href="/groups/{{ group.id }}">← {{ group.name }}</a>
-    <a href="/groups/{{ group.id }}/split">🧾 Split Tagihan</a>
-    <span style="margin-left:auto; font-size:13px; color:#666;">
-        👤 {{ current_user.name }}
-    </span>
-    <a href="/logout" class="btn btn-danger" style="padding:5px 14px;">Logout</a>
+    <a href="/groups" class="nav-back">← {{ t['nav_sharing'] }}</a>
+    <div class="nav-divider"></div>
+    <a href="/groups/{{ group.id }}" class="nav-link{{ ' active' if active == 'detail' else '' }}">📋 Transaksi</a>
+    <a href="/groups/{{ group.id }}/split" class="nav-link{{ ' active' if active == 'split' else '' }}">🧾 Split Tagihan</a>
+    <a href="/groups/{{ group.id }}/report" class="nav-link{{ ' active' if active == 'report' else '' }}">📊 Laporan</a>
+    <div class="nav-right">
+        <div class="user-chip">
+            <div class="user-avatar">
+                {% if current_user.photo %}
+                    <img src="{{ url_for('static', filename='uploads/' + current_user.photo) }}" alt="foto">
+                {% else %}
+                    👤
+                {% endif %}
+            </div>
+            <span>{{ current_user.name }}</span>
+        </div>
+        <button class="theme-toggle" onclick="toggleTheme()">
+            <span class="theme-icon">☀️</span>
+        </button>
+        <a href="/logout" class="btn-logout">Logout</a>
+    </div>
 </nav>
 <main>
 
@@ -218,5 +238,25 @@ function updateEqual() {
 
 updateEqual();
 </script>
+
+<script>
+function toggleTheme() {
+    var html = document.documentElement;
+    var isDark = html.getAttribute('data-theme') === 'dark';
+    var next = isDark ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('fintrack_theme', next);
+    document.querySelectorAll('.theme-icon').forEach(function(el) {
+        el.textContent = isDark ? '🌙' : '☀️';
+    });
+}
+document.addEventListener('DOMContentLoaded', function() {
+    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    document.querySelectorAll('.theme-icon').forEach(function(el) {
+        el.textContent = isDark ? '🌙' : '☀️';
+    });
+});
+</script>
+
 </body>
 </html>

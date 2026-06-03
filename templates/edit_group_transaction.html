@@ -11,14 +11,29 @@
     <h1>💰 FinTrack</h1>
     <p>Mode Sharing — {{ group.name }}</p>
 </header>
+{% set active = 'detail' %}
 <nav class="navbar">
-    <a href="/">🏠 Beranda</a>
-    <a href="/groups">👥 Sharing</a>
-    <a href="/groups/{{ group.id }}">← {{ group.name }}</a>
-    <span style="margin-left:auto; font-size:13px; color:#666;">
-        👤 {{ current_user.name }}
-    </span>
-    <a href="/logout" class="btn btn-danger" style="padding:5px 14px;">Logout</a>
+    <a href="/groups" class="nav-back">← {{ t['nav_sharing'] }}</a>
+    <div class="nav-divider"></div>
+    <a href="/groups/{{ group.id }}" class="nav-link{{ ' active' if active == 'detail' else '' }}">📋 Transaksi</a>
+    <a href="/groups/{{ group.id }}/split" class="nav-link{{ ' active' if active == 'split' else '' }}">🧾 Split Tagihan</a>
+    <a href="/groups/{{ group.id }}/report" class="nav-link{{ ' active' if active == 'report' else '' }}">📊 Laporan</a>
+    <div class="nav-right">
+        <div class="user-chip">
+            <div class="user-avatar">
+                {% if current_user.photo %}
+                    <img src="{{ url_for('static', filename='uploads/' + current_user.photo) }}" alt="foto">
+                {% else %}
+                    👤
+                {% endif %}
+            </div>
+            <span>{{ current_user.name }}</span>
+        </div>
+        <button class="theme-toggle" onclick="toggleTheme()">
+            <span class="theme-icon">☀️</span>
+        </button>
+        <a href="/logout" class="btn-logout">Logout</a>
+    </div>
 </nav>
 <main>
     <div class="card form-card">
