@@ -1,5 +1,8 @@
 TRANSLATIONS = {
     'id': {
+        #header
+        'desc_app' : 'Kelola Keuanganmu dengan mudah, kapan saja, di mana saja.',
+        
         # Navbar
         'nav_home'         : 'Beranda',
         'nav_report'       : 'Laporan',
@@ -142,6 +145,9 @@ TRANSLATIONS = {
 
 
     'en': {
+        #header
+        'desc_app' : 'Manage your finances easily, anytime, anywhere.',
+        
         # Navbar
         'nav_home'         : 'Home',
         'nav_report'       : 'Report',

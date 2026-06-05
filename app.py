@@ -572,6 +572,7 @@ def scan():
             'category': 'Belanja',
             'date'    : datetime.utcnow().strftime('%Y-%m-%d'),
             'note'    : note,
+            'user_id' : current_user.id
         }
         return render_template('scan.html', result=result)
 
@@ -717,6 +718,7 @@ def scan_group_transaction(group_id):
             'category': 'Belanja',
             'date'    : datetime.utcnow().strftime('%Y-%m-%d'),
             'note'    : note,
+            'user_id' : current_user.id
         }
         return render_template('scan_group_transaction.html',
                                group=group, funds=funds, result=result)
@@ -746,7 +748,8 @@ def add_group_transaction(group_id):
                 category="Belanja",
                 type="expense",
                 amount=total,
-                date=datetime.utcnow()
+                date=datetime.utcnow(),
+                user_id  = current_user.id, 
             )
             db.session.add(transaction)
             db.session.commit()
@@ -760,7 +763,8 @@ def add_group_transaction(group_id):
                 category=request.form['category'],
                 type=request.form['type'],
                 amount=float(request.form['amount']),
-                date=datetime.utcnow()
+                date=datetime.utcnow(),
+                user_id  = current_user.id
             )
             db.session.add(transaction)
             db.session.commit()
