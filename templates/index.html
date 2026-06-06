@@ -22,7 +22,6 @@
 <nav class="navbar">
     <a href="/index" class="nav-link active">🏠 {{ t['nav_home'] }}</a>
     <a href="/report" class="nav-link">📊 {{ t['nav_report'] }}</a>
-    <a href="/scan" class="nav-link">📷 {{ t['nav_scan'] }}</a>
     <a href="/groups" class="nav-link">👥 {{ t['nav_sharing'] }}</a>
     <a href="/settings" class="nav-link">⚙️ {{ t['nav_settings'] }}</a>
     <div class="nav-right">
@@ -60,7 +59,7 @@
     <div class="budget-alert budget-danger">
         <span class="budget-icon">🚨</span>
         <div>
-            <strong>Budget Habis!</strong>
+            <strong>{{ t['budget_expired'] }}</strong>
             <p>{{ budget_status.message }}</p>
         </div>
     </div>
@@ -68,7 +67,7 @@
     <div class="budget-alert budget-warning">
         <span class="budget-icon">⚠️</span>
         <div>
-            <strong>Peringatan Budget!</strong>
+            <strong>{{ t['budget_warning'] }}</strong>
             <p>{{ budget_status.message }}</p>
         </div>
     </div>
@@ -80,14 +79,14 @@
 <div class="card budget-card">
     <div class="budget-header">
         <div>
-            <h3>Budget {{ budget_status.period_label }}</h3>
+            <h3>{{ t['budget'] }} {{ budget_status.period_label }}</h3>
             <p class="budget-sub">
                 Rp {{ "{:,.0f}".format(budget_status.total_expense) }}
                 dari Rp {{ "{:,.0f}".format(budget_status.amount) }}
             </p>
         </div>
         <button class="btn btn-secondary" onclick="toggleBudgetForm()">
-            ✏️ Ubah Budget
+            ✏️ {{ t['edit_budget'] }}
         </button>
     </div>
 
@@ -104,9 +103,9 @@
     <div class="budget-footer">
         <span class="{{ 'text-expense' if budget_status.remaining <= 0 else '' }}">
             {% if budget_status.remaining > 0 %}
-                Sisa: Rp {{ "{:,.0f}".format(budget_status.remaining) }}
+                {{ t['remaining'] }}: Rp {{ "{:,.0f}".format(budget_status.remaining) }}
             {% else %}
-                Melebihi budget: Rp {{ "{:,.0f}".format(budget_status.remaining * -1) }}
+                {{ t['over_budget'] }}: Rp {{ "{:,.0f}".format(budget_status.remaining * -1) }}
             {% endif %}
         </span>
         <span>{{ "{:.0f}".format(budget_status.percentage) }}%</span>
@@ -117,7 +116,7 @@
 <!-- Form Set Budget (tersembunyi) -->
 <div id="budget-form" style="display:none;">
     <div class="card form-card" style="max-width:100%;">
-        <h3 style="margin-bottom:16px;">⚙️ Atur Budget</h3>
+        <h3 style="margin-bottom:16px;">⚙️ {{ t['manage_budget'] }}</h3>
         <form method="POST" action="/budget" style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
             <div class="form-group" style="margin:0; flex:1; min-width:150px;">
                 <label>{{ t['budget_amount'] }} (Rp)</label>
@@ -147,7 +146,7 @@
         <form method="POST" action="/budget" style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
             <div class="form-group" style="margin:0; flex:1; min-width:150px;">
                 <label>{{ t['budget_amount'] }} (Rp)</label>
-                <input type="number" name="amount" placeholder="Contoh: 500000" min="0" required>
+                <input type="number" name="amount" placeholder="{{ t['budget_amount_placeholder'] }}" min="0" required>
             </div>
             <div class="form-group" style="margin:0; flex:1; min-width:150px;">
                 <label>{{ t['period'] }}</label>
@@ -183,51 +182,100 @@
 
     <!-- Tombol Tambah -->
     <div class="action-bar">
-        <a href="/add" class="btn btn-primary">{{ t['add_transaction'] }}</a>
+        <a href="/add" class="btn btn-primary"> ➕ {{ t['add_transaction'] }}</a>
+        <a href="/scan" class="btn btn-primary">📷 {{ t['nav_scan'] }}</a>
     </div>
 
-    <!-- Tabel Riwayat -->
-    <div class="card">
-        <h2>{{ t['transaction_history'] }}</h2>
-        {% if transactions %}
-        <table>
-            <thead>
-                <tr>
-                    <th>{{ t['date'] }}</th>
-                    <th>{{ t['title'] }}</th>
-                    <th>{{ t['category'] }}</th>
-                    <th>{{ t['type'] }}</th>
-                    <th>{{ t['amount'] }}</th>
-                    <th>{{ t['actions'] }}</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for trx in transactions %}
-<tr>
-    <td>{{ trx.date.strftime('%d/%m/%Y') }}</td>
-    <td>{{ trx.title }}</td>
-    <td>{{ trx.category }}</td>
-    <td>
-        <span class="badge {{ 'badge-income' if trx.type == 'income' else 'badge-expense' }}">
-            {{ t['income'] if trx.type == 'income' else t['expense'] }}
-        </span>
-    </td>
-    <td class="{{ 'text-income' if trx.type == 'income' else 'text-expense' }}">
-        Rp {{ "{:,.0f}".format(trx.amount) }}
-    </td>
-    <td style="display:flex; gap:6px;">
-        <a href="/edit/{{ trx.id }}" class="btn btn-edit">✏️ {{ t['edit'] }}</a>
-        <a href="/delete/{{ trx.id }}" class="btn btn-danger"
-           onclick="return confirm('Yakin mau hapus?')">🗑 {{ t['delete'] }}</a>
-    </td>
-</tr>
-{% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-            <p class="empty-msg">{{ t['no_transaction'] }}</p>
-        {% endif %}
+   <!-- Tabel Riwayat -->
+<div class="card">
+    <h2>{{ t['transaction_history'] }}</h2>
+
+    <!-- Filter bulan — di LUAR table -->
+    <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; align-items:center;">
+        <select id="filter-month" onchange="filterByMonth()"
+                style="padding:7px 12px; border:1.5px solid #C8D9E6;
+                       border-radius:99px; font-size:13px; background:#F5EFEB;
+                       color:#2F4156; cursor:pointer;">
+            <option value="">📅 Semua Bulan</option>
+            <option value="01">Januari</option>
+            <option value="02">Februari</option>
+            <option value="03">Maret</option>
+            <option value="04">April</option>
+            <option value="05">Mei</option>
+            <option value="06">Juni</option>
+            <option value="07">Juli</option>
+            <option value="08">Agustus</option>
+            <option value="09">September</option>
+            <option value="10">Oktober</option>
+            <option value="11">November</option>
+            <option value="12">Desember</option>
+        </select>
+
+        <select id="filter-year" onchange="filterByMonth()"
+                style="padding:7px 12px; border:1.5px solid #C8D9E6;
+                       border-radius:99px; font-size:13px; background:#F5EFEB;
+                       color:#2F4156; cursor:pointer;">
+            <option value="">Semua Tahun</option>
+            {% set years = [] %}
+            {% for trx in transactions %}
+                {% if trx.date.strftime('%Y') not in years %}
+                    {% set _ = years.append(trx.date.strftime('%Y')) %}
+                {% endif %}
+            {% endfor %}
+            {% for year in years|sort(reverse=True) %}
+                <option value="{{ year }}">{{ year }}</option>
+            {% endfor %}
+        </select>
+
+        <span id="filter-count" style="font-size:13px; color:#567C8D;"></span>
+
+        <button onclick="resetMonthFilter()"
+                style="padding:7px 14px; border:1.5px solid #C8D9E6;
+                       border-radius:99px; font-size:13px; background:#F5EFEB;
+                       color:#567C8D; cursor:pointer; font-family:inherit;">
+            Reset
+        </button>
     </div>
+
+    {% if transactions %}
+    <table id="trans-table">
+        <thead>
+            <tr>
+                <th>{{ t['date'] }}</th>
+                <th>{{ t['title'] }}</th>
+                <th>{{ t['category'] }}</th>
+                <th>{{ t['type'] }}</th>
+                <th>{{ t['amount'] }}</th>
+                <th>{{ t['actions'] }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for trx in transactions %}
+            <tr data-date="{{ trx.date.strftime('%m-%Y') }}">
+                <td>{{ trx.date.strftime('%d/%m/%Y') }}</td>
+                <td>{{ trx.title }}</td>
+                <td>{{ trx.category }}</td>
+                <td>
+                    <span class="badge {{ 'badge-income' if trx.type == 'income' else 'badge-expense' }}">
+                        {{ t['income'] if trx.type == 'income' else t['expense'] }}
+                    </span>
+                </td>
+                <td class="{{ 'text-income' if trx.type == 'income' else 'text-expense' }}">
+                    Rp {{ "{:,.0f}".format(trx.amount) }}
+                </td>
+                <td style="display:flex; gap:6px;">
+                    <a href="/edit/{{ trx.id }}" class="btn btn-edit">✏️ {{ t['edit'] }}</a>
+                    <a href="/delete/{{ trx.id }}" class="btn btn-danger"
+                       onclick="return confirm('Yakin mau hapus?')">🗑 {{ t['delete'] }}</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p class="empty-msg">{{ t['no_transaction'] }}</p>
+    {% endif %}
+</div>
 
 </main>
 
@@ -260,4 +308,46 @@ document.querySelectorAll('.theme-icon').forEach(function(el) {
 </script>
 
 </body>
+
+<script>
+function filterByMonth() {
+    var month = document.getElementById('filter-month').value;
+    var year  = document.getElementById('filter-year').value;
+    var rows  = document.querySelectorAll('#trans-table tbody tr');
+    var count = 0;
+
+    rows.forEach(function(row) {
+        var date     = row.getAttribute('data-date');
+        var rowMonth = date ? date.split('-')[0] : '';
+        var rowYear  = date ? date.split('-')[1] : '';
+
+        var matchMonth = !month || rowMonth === month;
+        var matchYear  = !year  || rowYear  === year;
+
+        if (matchMonth && matchYear) {
+            row.style.display = '';
+            count++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    var countEl = document.getElementById('filter-count');
+    if (month || year) {
+        countEl.textContent = count + ' dari ' + rows.length + ' transaksi';
+    } else {
+        countEl.textContent = '';
+    }
+}
+
+function resetMonthFilter() {
+    document.getElementById('filter-month').value = '';
+    document.getElementById('filter-year').value  = '';
+    document.querySelectorAll('#trans-table tbody tr').forEach(function(row) {
+        row.style.display = '';
+    });
+    document.getElementById('filter-count').textContent = '';
+}
+</script>
+
 </html>

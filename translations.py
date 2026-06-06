@@ -81,6 +81,7 @@ TRANSLATIONS = {
         'no_data'               : 'Belum ada data.',
         'no_expense_data'       : 'Belum ada data pengeluaran.',
         'no_transaction_data'   : 'Belum ada data transaksi.',
+        'report'                : 'Laporan',
 
 
         # Budget
@@ -88,21 +89,26 @@ TRANSLATIONS = {
         'budget_this_week'  : 'Minggu Ini',
         'budget_this_month' : 'Bulan Ini',
         'budget_remaining'  : 'Sisa',
-        'budget_over'       : 'Melebihi budget',
-        'budget_empty'      : 'Budget Habis!',
-        'budget_warning'    : 'Peringatan Budget!',
-        'set_budget'        : 'Atur Budget',
-        'save_budget'       : 'Simpan Budget',
-        'change_budget'     : 'Ubah Budget',
-        'no_budget_set'     : 'Belum ada budget yang diatur.',
-        'set_budget_now'    : 'Atur Budget Sekarang',
-        'budget_amount'     : 'Jumlah Budget',
+        'budget_over'       : 'Melebihi batas pengeluaran',
+        'budget_empty'      : 'Batas Pengeluaran Habis!',
+        'budget_warning'    : 'Peringatan batas pengeluaran!',
+        'set_budget'        : 'Atur Batas Pengeluaran',
+        'save_budget'       : 'Simpan Batas Pengeluaran',
+        'change_budget'     : 'Ubah Batas Pengeluaran',
+        'no_budget_set'     : 'Belum ada batas pengeluaran yang diatur.',
+        'set_budget_now'    : 'Atur Batas Pengeluaran Sekarang',
+        'budget_amount'     : 'Jumlah Batas Pengeluaran',
         'budget_period'     : 'Periode',
         'period'            : 'Periode',
         'daily'             : 'Harian',
         'weekly'            : 'Mingguan',
         'monthly'           : 'Bulanan',
         'save'              : 'Simpan',
+        'manage_budget'     : 'Kelola Batas Pengeluaran',
+        'budget_amount_placeholder' : 'Contoh: 500000',
+        'remaining'          : 'Sisa',
+        'over_budget'        : 'Melebihi Batas Pengeluaran',
+        'edit_budget'        : 'Ubah Batas Pengeluaran',    
 
 
         # Grup / Sharing
@@ -114,6 +120,13 @@ TRANSLATIONS = {
         'open_group'        : 'Buka',
         'members'           : 'Anggota',
         'invite_code'       : 'Kode Undangan',
+        'desc_code'         :'Masukkan kode unik dari temanmu',
+        'no_groups'         : 'Belum ada grup. Buat atau gabung grup dulu!',
+        'code'            : 'Kode',
+        'member'         : 'Anggota',
+        'group'         : 'Grup',
+        'group_name_placeholder' : 'Contoh: Kos Bareng, Kel 12',
+        'group_code_placeholder' : 'Contoh: A1B2C3D4',
 
 
         # Settings
@@ -141,6 +154,18 @@ TRANSLATIONS = {
         'new_password'      : 'Password Baru',
         'confirm_password'  : 'Konfirmasi Password Baru',
         'joined'            : 'Bergabung',
+        'desc_profile'      : 'Ubah informasi profil kamu',
+        'desc_preferences'  : 'Sesuaikan tampilan dan bahasa aplikasi',
+        'desc_security'     : 'Gunakan password yang kuat dan unik',
+        'desc_export'       : 'Download semua data transaksi pribadimu',
+        'desc_login_history' : '5 login terakhir di akunmu',
+        'desc_delete_account' : 'Tindakan ini tidak bisa dibatalkan. Semua data transaksi dan budget akan dihapus permanen.',
+        'form_delete'       : '⚠️ Yang akan dihapus: semua transaksi, budget, dan data akun kamu.',
+        'form_preferensi'    : 'Preferensi berhasil disimpan!',
+        'export_csv'        : 'Ekspor CSV',
+        'desc_export_csv'   : 'Format spreadsheet universal, bisa dibuka di Excel / Google Sheets',
+        'export_excel'      : 'Ekspor Excel',
+        'desc_export_excel' : 'Format .xlsx dengan warna dan formatting otomatis',
     },
 
 
@@ -226,6 +251,7 @@ TRANSLATIONS = {
         'no_data'               : 'No data yet.',
         'no_expense_data'       : 'No expense data yet.',
         'no_transaction_data'   : 'No transaction data yet.',
+        'report'                : 'Report',
 
 
         # Budget
@@ -248,6 +274,11 @@ TRANSLATIONS = {
         'weekly'            : 'Weekly',
         'monthly'           : 'Monthly',
         'save'              : 'Save',
+        'manage_budget'     : 'Manage Budget',
+        'budget_amount_placeholder' : 'Example: 500000',
+        'remaining'          : 'Remaining',
+        'over_budget'        : 'Over Budget',
+        'edit_budget'        : 'Edit Budget',
 
 
         # Grup / Sharing
@@ -259,6 +290,13 @@ TRANSLATIONS = {
         'open_group'        : 'Open',
         'members'           : 'Members',
         'invite_code'       : 'Invite Code',
+        'desc_code'         :'Enter the unique code from your friend',
+        'no_groups'         : 'No groups yet. Create or join a group first!',
+        'code'            : 'Code',
+        'member'         : 'Member',
+        'group'         : 'Group',
+        'group_name_placeholder' : 'Example: Shared Apartment, Class 12',
+        'group_code_placeholder' : 'Example: A1B2C3D4',
 
 
         # Settings
@@ -279,13 +317,26 @@ TRANSLATIONS = {
         'dark_mode'         : '🌙 Dark Mode',
         'timezone'          : 'Timezone',
         'notification'      : 'Notification',
-        'notif_popup_label' : 'Show popup notifications in app',
+        'notif_popup_label' : 'Show popup notifications',
         'save_preferences'  : 'Save Preferences',
         'change_password'   : 'Change Password',
         'current_password'  : 'Current Password',
         'new_password'      : 'New Password',
         'confirm_password'  : 'Confirm New Password',
         'joined'            : 'Joined',
+        'desc_profile'      : 'Update your profile information',
+        'desc_preferences'  : 'Customize app appearance and language',
+        'desc_security'     : 'Use a strong and unique password',
+        'desc_export'       : 'Download all your personal transaction data',
+        'desc_login_history' : 'Your last 5 logins',
+        'desc_delete_account' : 'This action cannot be undone. All your transactions and budgets will be permanently deleted.',
+        'form_delete'       : '⚠️ This will delete all your transactions, budgets, and account data.',
+        'export_csv'        : 'Eksport CSV',
+        'desc_export_csv'   : 'Universal spreadsheet format, can be opened in Excel / Google Sheets',
+        'export_excel'      : 'Eksport Excel',
+        'desc_export_excel' : '.xlsx format with color and automatic formatting',
+        'form_preferensi'    : 'Preferences saved successfully!',
+           
     }
 }
 

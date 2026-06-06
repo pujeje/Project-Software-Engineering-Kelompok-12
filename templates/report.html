@@ -9,7 +9,7 @@
 })();
 </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan - FinTrack</title>
+    <title>{{ t['report'] }} - FinTrack</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 </head>
@@ -25,7 +25,6 @@
 <nav class="navbar">
     <a href="/index" class="nav-link">🏠 {{ t['nav_home'] }}</a>
     <a href="/report" class="nav-link active">📊 {{ t['nav_report'] }}</a>
-    <a href="/scan" class="nav-link">📷 {{ t['nav_scan'] }}</a>
     <a href="/groups" class="nav-link">👥 {{ t['nav_sharing'] }}</a>
     <a href="/settings" class="nav-link">⚙️ {{ t['nav_settings'] }}</a>
     <div class="nav-right">

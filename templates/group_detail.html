@@ -301,6 +301,52 @@
             <!-- Riwayat Transaksi -->
             <div class="card">
                 <h2>📋 Riwayat Transaksi Grup</h2>
+                <!-- Filter bulan -->
+<div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; align-items:center;">
+    <select id="filter-month" onchange="filterByMonth()"
+            style="padding:7px 12px; border:1.5px solid #C8D9E6;
+                   border-radius:99px; font-size:13px; background:#F5EFEB;
+                   color:#2F4156; cursor:pointer;">
+        <option value="">📅 Semua Bulan</option>
+        <option value="01">Januari</option>
+        <option value="02">Februari</option>
+        <option value="03">Maret</option>
+        <option value="04">April</option>
+        <option value="05">Mei</option>
+        <option value="06">Juni</option>
+        <option value="07">Juli</option>
+        <option value="08">Agustus</option>
+        <option value="09">September</option>
+        <option value="10">Oktober</option>
+        <option value="11">November</option>
+        <option value="12">Desember</option>
+    </select>
+
+    <select id="filter-year" onchange="filterByMonth()"
+            style="padding:7px 12px; border:1.5px solid #C8D9E6;
+                   border-radius:99px; font-size:13px; background:#F5EFEB;
+                   color:#2F4156; cursor:pointer;">
+        <option value="">Semua Tahun</option>
+        {% set years = [] %}
+        {% for trx in transactions %}
+            {% if trx.date.strftime('%Y') not in years %}
+                {% set _ = years.append(trx.date.strftime('%Y')) %}
+            {% endif %}
+        {% endfor %}
+        {% for year in years|sort(reverse=True) %}
+            <option value="{{ year }}">{{ year }}</option>
+        {% endfor %}
+    </select>
+
+    <span id="filter-count" style="font-size:13px; color:#567C8D;"></span>
+
+    <button onclick="resetMonthFilter()"
+            style="padding:7px 14px; border:1.5px solid #C8D9E6;
+                   border-radius:99px; font-size:13px; background:#F5EFEB;
+                   color:#567C8D; cursor:pointer;">
+        Reset
+    </button>
+</div>
                 {% if transactions %}
                 <table id="trans-table" style="margin-top:16px;">
                     <thead>
@@ -316,7 +362,7 @@
                     </thead>
                     <tbody>
                         {% for t in transactions %}
-                        <tr>
+                        <tr data-date="{{ t.date.strftime('%m-%Y') }}">
                             <td>{{ t.date.strftime('%d/%m/%Y') }}</td>
                             <td>{{ t.title }}</td>
                             <td style="font-size:12px; color:#666;">{{ t.user.name }}</td>
@@ -461,4 +507,48 @@ document.querySelectorAll('.theme-icon').forEach(function(el) {
 </script>
 
 </body>
+
+<script>
+function filterByMonth() {
+    var month = document.getElementById('filter-month').value;
+    var year  = document.getElementById('filter-year').value;
+    var rows  = document.querySelectorAll('#trans-table tbody tr');
+    var count = 0;
+
+    rows.forEach(function(row) {
+        var date    = row.getAttribute('data-date'); // format MM-YYYY
+        var rowMonth = date ? date.split('-')[0] : '';
+        var rowYear  = date ? date.split('-')[1] : '';
+
+        var matchMonth = !month || rowMonth === month;
+        var matchYear  = !year  || rowYear  === year;
+
+        if (matchMonth && matchYear) {
+            row.style.display = '';
+            count++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    // Update counter
+    var total = rows.length;
+    var countEl = document.getElementById('filter-count');
+    if (month || year) {
+        countEl.textContent = count + ' dari ' + total + ' transaksi';
+    } else {
+        countEl.textContent = '';
+    }
+}
+
+function resetMonthFilter() {
+    document.getElementById('filter-month').value = '';
+    document.getElementById('filter-year').value  = '';
+    document.querySelectorAll('#trans-table tbody tr').forEach(function(row) {
+        row.style.display = '';
+    });
+    document.getElementById('filter-count').textContent = '';
+}
+</script>
+
 </html>

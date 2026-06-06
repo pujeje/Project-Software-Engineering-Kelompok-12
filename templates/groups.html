@@ -9,7 +9,7 @@
 })();
 </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grup - FinTrack</title>
+    <title>{{ t['group'] }} - FinTrack</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -20,7 +20,6 @@
 <nav class="navbar">
     <a href="/index" class="nav-link">🏠 {{ t['nav_home'] }}</a>
     <a href="/report" class="nav-link">📊 {{ t['nav_report'] }}</a>
-    <a href="/scan" class="nav-link">📷 {{ t['nav_scan'] }}</a>
     <a href="/groups" class="nav-link active">👥 {{ t['nav_sharing'] }}</a>
     <a href="/settings" class="nav-link">⚙️ {{ t['nav_settings'] }}</a>
     <div class="nav-right">
@@ -56,7 +55,7 @@
             <form method="POST" action="/groups/create" style="margin-top:16px;">
                 <div class="form-group">
                     <label>{{ t['group_name'] }}</label>
-                    <input type="text" name="name" placeholder="Contoh: Kos Bareng, Kel 12" required>
+                    <input type="text" name="name" placeholder="{{ t['group_name_placeholder'] }}" required>
                 </div>
                 <button type="submit" class="btn btn-primary" style="width:100%;">{{ t['create_group'] }}</button>
             </form>
@@ -65,11 +64,11 @@
         <!-- Join Grup -->
         <div class="card">
             <h2>🔗 {{ t['join_group'] }}</h2>
-            <p style="font-size:13px; color:#666; margin:8px 0 16px;">Masukkan kode unik dari temanmu</p>
+            <p style="font-size:13px; color:#666; margin:8px 0 16px;">{{ t['desc_code'] }}</p>
             <form method="POST" action="/groups/join">
                 <div class="form-group">
                     <label>{{ t['group_code'] }}</label>
-                    <input type="text" name="code" placeholder="Contoh: A1B2C3D4"
+                    <input type="text" name="code" placeholder="{{ t['group_code_placeholder'] }}"
                            style="text-transform:uppercase; letter-spacing:2px;" required>
                 </div>
                 <button type="submit" class="btn btn-primary" style="width:100%;">{{ t['join_group'] }}</button>
@@ -89,8 +88,8 @@
                     <div>
                         <p style="font-weight:500; margin-bottom:4px;">{{ group.name }}</p>
                         <p style="font-size:12px; color:#888;">
-                            Kode: <strong style="letter-spacing:1px;">{{ group.code }}</strong>
-                            · {{ group.members|length }} anggota
+                            {{ t['code'] }}: <strong style="letter-spacing:1px;">{{ group.code }}</strong>
+                            · {{ group.members|length }} {{ t['member'] }}
                         </p>
                     </div>
                     <a href="/groups/{{ group.id }}" class="btn btn-primary">{{ t['open_group'] }}</a>
@@ -98,7 +97,7 @@
                 {% endfor %}
             </div>
         {% else %}
-            <p class="empty-msg">Belum ada grup. Buat atau gabung grup dulu!</p>
+            <p class="empty-msg">{{ t['no_groups'] }}</p>
         {% endif %}
     </div>
 

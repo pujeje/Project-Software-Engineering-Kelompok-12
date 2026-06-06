@@ -20,7 +20,6 @@
 <nav class="navbar">
     <a href="/index" class="nav-link">🏠 {{ t['nav_home'] }}</a>
     <a href="/report" class="nav-link">📊 {{ t['nav_report'] }}</a>
-    <a href="/scan" class="nav-link">📷 {{ t['nav_scan'] }}</a>
     <a href="/groups" class="nav-link">👥 {{ t['nav_sharing'] }}</a>
     <a href="/settings" class="nav-link active">⚙️ {{ t['nav_settings'] }}</a>
     <div class="nav-right">
@@ -90,7 +89,7 @@
                 <div class="card">
                     <h2>👤 {{ t['profile'] }}</h2>
                     <p style="font-size:13px; color:#666; margin-bottom:20px;">
-                        Ubah informasi profil kamu
+                        {{ t['desc_profile'] }}
                     </p>
 
                     <!-- Foto profil -->
@@ -115,7 +114,7 @@
                                 {{ current_user.email }}
                             </p>
                             <p style="font-size:12px; color:#aaa; margin-top:4px;">
-                                Bergabung {{ current_user.created_at.strftime('%d %B %Y') }}
+                                {{ t['joined'] }} {{ current_user.created_at.strftime('%d %B %Y') }}
                             </p>
                         </div>
                     </div>
@@ -158,7 +157,7 @@
                 <div class="card">
                     <h2>🎨 {{ t['preferences'] }}</h2>
                     <p style="font-size:13px; color:#666; margin-bottom:20px;">
-                        Sesuaikan tampilan dan bahasa aplikasi
+                        {{ t['desc_preferences'] }}
                     </p>
 
                     <form method="POST" action="/settings/preferences">
@@ -202,7 +201,7 @@
                 <div class="card">
                     <h2>🔒 {{ t['change_password'] }}</h2>
                     <p style="font-size:13px; color:#666; margin-bottom:20px;">
-                        Gunakan password yang kuat dan unik
+                        {{ t['desc_security'] }}
                     </p>
 
                     <form method="POST" action="/settings/password">
@@ -247,7 +246,7 @@
                 <div class="card">
                     <h2>📤 {{ t['export_data'] }}</h2>
                     <p style="font-size:13px; color:#666; margin-bottom:24px;">
-                        Download semua data transaksi pribadimu
+                        {{ t['desc_export'] }}
                     </p>
 
                     <div style="display:grid;
@@ -256,12 +255,11 @@
                                     border-radius:12px; text-align:center;">
                             <p style="font-size:32px; margin-bottom:8px;">📄</p>
                             <p style="font-weight:500; margin-bottom:4px;">
-                                Export CSV
+                                {{ t['export_csv'] }}
                             </p>
                             <p style="font-size:12px; color:#888;
                                       margin-bottom:16px;">
-                                Format spreadsheet universal,
-                                bisa dibuka di Excel / Google Sheets
+                                {{ t['desc_export_csv'] }}
                             </p>
                             <a href="/settings/export/csv"
                                class="btn btn-primary" style="width:100%;">
@@ -273,12 +271,11 @@
                                     border-radius:12px; text-align:center;">
                             <p style="font-size:32px; margin-bottom:8px;">📊</p>
                             <p style="font-weight:500; margin-bottom:4px;">
-                                Export Excel
+                                {{ t['export_excel'] }}
                             </p>
                             <p style="font-size:12px; color:#888;
                                       margin-bottom:16px;">
-                                Format .xlsx dengan warna dan
-                                formatting otomatis
+                                {{ t['desc_export_excel'] }}
                             </p>
                             <a href="/settings/export/excel"
                                class="btn btn-primary" style="width:100%;">
@@ -295,7 +292,7 @@
                 <div class="card">
                     <h2>🕐 {{ t['login_history'] }}</h2>
                     <p style="font-size:13px; color:#666; margin-bottom:20px;">
-                        5 login terakhir di akunmu
+                        {{ t['desc_login_history'] }}
                     </p>
 
                     {% if login_histories %}
@@ -332,14 +329,12 @@
                      style="border:1px solid #fca5a5;">
                     <h2 style="color:#dc2626;">🗑️ {{ t['delete_account'] }}</h2>
                     <p style="font-size:13px; color:#666; margin-bottom:8px;">
-                        Tindakan ini <strong>tidak bisa dibatalkan</strong>.
-                        Semua data transaksi dan budget akan dihapus permanen.
+                        {{ t['desc_delete_account'] }}
                     </p>
                     <div style="background:#fee2e2; padding:12px 16px;
                                 border-radius:8px; margin-bottom:20px;">
                         <p style="font-size:13px; color:#991b1b;">
-                            ⚠️ Yang akan dihapus: semua transaksi, budget,
-                            dan data akun kamu.
+                             {{ t['form_delete'] }}
                         </p>
                     </div>
 
