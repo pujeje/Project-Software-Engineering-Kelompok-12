@@ -85,6 +85,7 @@ td { padding: 12px; border-bottom: 1px solid #EDE7E1; }
 .text-income  { color: #3A7D6E; font-weight: 600; }
 .text-expense { color: #C0444F; font-weight: 600; }
 
+
 /* Badge */
 .badge {
     padding: 3px 10px;
@@ -472,3 +473,4 @@ td { padding: 12px; border-bottom: 1px solid #EDE7E1; }
 [data-theme="dark"] .settings-nav.active { background: #2F4156; color: #C8D9E6; border-left: 3px solid #567C8D; }
 [data-theme="dark"] .settings-nav.danger { color: #E07A82; }
 [data-theme="dark"] .settings-nav.danger:hover { background: #3A1E22; }
+

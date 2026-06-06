@@ -2,14 +2,7 @@
 <html lang="id" data-theme="light" id="html-root">
 <head>
     <meta charset="UTF-8">
-    <script>
-    (function(){
-        var t = localStorage.getItem('fintrack_theme') || 'light';
-        document.documentElement.setAttribute('data-theme', t);
-    })();
-    </script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script>
+     <script>
 (function(){
     var t = localStorage.getItem('fintrack_theme') || 'light';
     document.documentElement.setAttribute('data-theme', t);
@@ -42,8 +35,8 @@
             <span>{{ current_user.name }}</span>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()">
-    <span class="theme-icon">☀️</span>
-</button>
+            <span class="theme-icon">☀️</span>
+        </button>
         <a href="/logout" class="btn-logout">{{ t['nav_logout'] }}</a>
     </div>
 </nav>
@@ -395,16 +388,6 @@ function previewPhoto(input) {
     }
 }
 
-// Preview dark/light mode
-function previewTheme(theme) {
-    document.getElementById('html-root').setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
-}
-
-// Load tema tersimpan
-const savedTheme = '{{ current_user.theme }}';
-document.getElementById('html-root').setAttribute('data-theme', savedTheme);
-
 // Cek kekuatan password
 function checkStrength(pw) {
     const fill = document.getElementById('strength-fill');
@@ -439,15 +422,14 @@ function toggleTheme() {
     html.setAttribute('data-theme', next);
     localStorage.setItem('fintrack_theme', next);
     document.querySelectorAll('.theme-icon').forEach(function(el) {
-        el.textContent = next === 'dark' ? '🌙' : '☀️';
+        el.textContent = isDark ? '🌙' : '☀️';
     });
 }
-
-// Set ikon yang benar saat halaman dibuka
-var savedTheme = localStorage.getItem('fintrack_theme') || 'light';
-document.documentElement.setAttribute('data-theme', savedTheme);
-document.querySelectorAll('.theme-icon').forEach(function(el) {
-    el.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+document.addEventListener('DOMContentLoaded', function() {
+    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    document.querySelectorAll('.theme-icon').forEach(function(el) {
+        el.textContent = isDark ? '🌙' : '☀️';
+    });
 });
 </script>
 

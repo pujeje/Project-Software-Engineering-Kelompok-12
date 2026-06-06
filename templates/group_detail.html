@@ -86,8 +86,7 @@
         </div>
     </div>
 
-    <div style="display:grid; grid-template-columns:2fr 1fr; gap:20px;">
-        <div>
+    
 
             <!-- Dana / Pos Keuangan -->
             <div class="card" style="margin-bottom:20px;">
@@ -327,7 +326,7 @@
                                     {{ 'Pemasukan' if t.type == 'income' else 'Pengeluaran' }}
                                 </span>
                             </td>
-                            <td class="{{ 'text-income' if t.type == 'income' else 'text-expense' }}">
+                            <td class="{{ 'text-income' if t.type == 'income' else 'text-expense' }}"  style="white-space:nowrap;">
                                 Rp {{ "{:,.0f}".format(t.amount) }}
                             </td>
                             <td>

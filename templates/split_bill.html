@@ -2,6 +2,12 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <script>
+(function(){
+    var t = localStorage.getItem('fintrack_theme') || 'light';
+    document.documentElement.setAttribute('data-theme', t);
+})();
+</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Split Tagihan - {{ group.name }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
@@ -190,13 +196,14 @@
                                     {% endif %}
                                 </div>
                                 <div style="text-align:right;">
-                                    <p style="font-weight:600; color:#2d6a4f;">
+                                    
+                                    <p style="white-space:nowrap; color:#2d6a4f;">
                                         Rp {{ "{:,.0f}".format(bill.total_amount) }}
                                     </p>
                                     {% if all_paid %}
-                                    <span class="badge badge-income">✅ Lunas</span>
+                                    <span class="badge badge-income" style="white-space:nowrap;">✅ Lunas</span>
                                     {% else %}
-                                    <span class="badge badge-expense">⏳ Belum lunas</span>
+                                    <span class="badge badge-expense" style="white-space:nowrap;">⏳ Belum lunas</span>
                                     {% endif %}
                                 </div>
                             </div>
@@ -222,7 +229,7 @@
                                 <div style="display:flex; justify-content:space-between;
                                             align-items:center; padding:8px 0;
                                             border-top:0.5px solid #f3f4f6;">
-                                    <div style="display:flex; align-items:center; gap:8px;">
+                                    <div style="display:flex; align-items:center; gap:8px; ">
                                         <span style="font-size:13px;">
                                             {{ detail.user.name }}
                                             {% if detail.user_id == current_user.id %}
@@ -231,20 +238,20 @@
                                         </span>
                                         {% if detail.is_paid %}
                                         <span class="badge badge-income"
-                                              style="font-size:11px;">✅ Lunas</span>
+                                              style="font-size:11px;" >✅ Lunas</span>
                                         {% else %}
                                         <span class="badge badge-expense"
                                               style="font-size:11px;">Belum</span>
                                         {% endif %}
                                     </div>
                                     <div style="display:flex; align-items:center; gap:8px;">
-                                        <span style="font-weight:500; font-size:13px;">
+                                        <span style="font-weight:500; font-size:13px; white-space:nowrap;">
                                             Rp {{ "{:,.0f}".format(detail.amount) }}
                                         </span>
                                         {% if not detail.is_paid and detail.user_id == current_user.id %}
                                         <a href="/groups/{{ group.id }}/split/{{ bill.id }}/pay/{{ detail.id }}"
                                            class="btn btn-primary"
-                                           style="font-size:12px; padding:4px 10px;"
+                                           style="font-size:12px; padding:4px 10px; "
                                            onclick="return confirm('Tandai sebagai lunas?')">
                                             Tandai Lunas
                                         </a>
@@ -314,5 +321,27 @@ function updateEqual() {
 // Inisialisasi
 updateEqual();
 </script>
+
+<script>
+function toggleTheme() {
+    var html = document.documentElement;
+    var isDark = html.getAttribute('data-theme') === 'dark';
+    var next = isDark ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('fintrack_theme', next);
+    // Update ikon langsung setelah toggle
+    document.querySelectorAll('.theme-icon').forEach(function(el) {
+        el.textContent = next === 'dark' ? '🌙' : '☀️';
+    });
+}
+
+// Set ikon yang benar saat halaman pertama dibuka
+var savedTheme = localStorage.getItem('fintrack_theme') || 'light';
+document.documentElement.setAttribute('data-theme', savedTheme);
+document.querySelectorAll('.theme-icon').forEach(function(el) {
+    el.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+});
+</script>
+
 </body>
 </html>
