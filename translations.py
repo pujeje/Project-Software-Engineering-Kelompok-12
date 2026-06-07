@@ -11,6 +11,8 @@ TRANSLATIONS = {
         'nav_groups'       : 'Grup',
         'nav_settings'     : 'Pengaturan',
         'nav_logout'       : 'Keluar',
+        'nav_transaction'    : 'Transaksi',
+        'split_bill'       : 'Split Bill',
 
 
         # Index
@@ -82,6 +84,8 @@ TRANSLATIONS = {
         'no_expense_data'       : 'Belum ada data pengeluaran.',
         'no_transaction_data'   : 'Belum ada data transaksi.',
         'report'                : 'Laporan',
+        'income'               : 'Pemasukan',
+        'expense'              : 'Pengeluaran',
 
 
         # Budget
@@ -127,6 +131,69 @@ TRANSLATIONS = {
         'group'         : 'Grup',
         'group_name_placeholder' : 'Contoh: Kos Bareng, Kel 12',
         'group_code_placeholder' : 'Contoh: A1B2C3D4',
+        
+        # grup transaksi
+        'code_invitation' : 'Kode Undangan',
+        'desc_code_invitation' : 'Bagikan kode unik ini ke temanmu untuk bergabung.',
+        'no_transactions' : 'Belum ada transaksi di grup ini.',
+        'group_balance' : 'Saldo Grup',
+        'fund_desc' : 'Masuk ke Dana (optional)',
+        'note_placeholder' : 'Contoh: Untuk beli kopi',
+        'all_funds' : 'Semua Dana',
+        'no_fund' : 'Tanpa Dana',
+        'all_types' : 'Semua Tipe',
+        'all_members' : 'Semua Anggota',
+        'reset_filters' : 'Atur ulang filter',
+        'riwayat_transaksi' : 'Riwayat Transaksi',
+        'fund_income' : 'Pemasukan Dana',
+        'fund_expense' : 'Pengeluaran Dana',
+        'fund_balance' : 'Saldo Dana',
+        'fund_target' : 'Target Dana',
+        'fund_progress' : 'Progres Dana',
+        'no_fund' : 'Belum ada dana. Tambahkan pos keuangan dulu!',
+        'activity_log_desc' : 'Riwayat aktivitas anggota',
+        'no_activities' : 'Belum ada aktivitas.',
+        'showing_last_activities' : 'Menampilkan 20 aktivitas terakhir',
+        'activity_log' : 'Log Aktivitas',
+        'fund_name' : 'Nama Dana/ Pos Keuangan',
+        'fund_name_placeholder' : 'Contoh: Dana Kegiatan, Dana Operasional',
+        'add_fund' : 'Tambah Dana',
+        'edit_fund' : 'Edit Dana',
+        'delete_fund' : 'Hapus Dana',
+        'confirm_delete_fund' : 'Yakin mau hapus dana ini? Semua transaksi yang terkait dengan dana ini akan dipindahkan ke "Tanpa Dana".',
+        
+        
+        
+        #filter bulan
+        'all_months' : 'Semua Bulan',
+        'january' : 'Januari',
+        'february' : 'Februari',
+        'march' : 'Maret',
+        'april' : 'April',
+        'may' : 'Mei',
+        'june' : 'Juni',
+        'july' : 'Juli',
+        'august' : 'Agustus',
+        'september' : 'September',
+        'october' : 'Oktober',
+        'november' : 'November',
+        'december' : 'Desember',
+        'all_years' : 'Semua Tahun',
+        
+        #grup report
+        'expense_by_member' : 'Pengeluaran per Anggota',
+        'expense_by_fund' : 'Pengeluaran per Dana',
+        'member_contribution_summary' : 'Ringkasan Kontribusi Anggota',
+        'fund_summary' : 'Ringkasan per Dana / Pos Keuangan',
+        'no_expense_data' : 'Belum ada data pengeluaran.',
+        'no_transaction_data' : 'Belum ada data transaksi.',
+        
+        #edit transaksi grup
+        'edit_transaction' : 'Edit Transaksi Grup',
+        'edited_by' : 'Diedit oleh',
+        'cancel' : 'Batal',
+        'save_changes' : 'Simpan Perubahan',
+        
 
 
         # Settings
@@ -181,6 +248,9 @@ TRANSLATIONS = {
         'nav_groups'       : 'Groups',
         'nav_settings'     : 'Settings',
         'nav_logout'       : 'Logout',
+        'nav_transaction'    : 'Transactions',
+        'split_bill'       : 'Split Bill',
+        
 
 
         # Index
@@ -297,7 +367,67 @@ TRANSLATIONS = {
         'group'         : 'Group',
         'group_name_placeholder' : 'Example: Shared Apartment, Class 12',
         'group_code_placeholder' : 'Example: A1B2C3D4',
-
+        
+        # grup transaksi
+        'code_invitation' : 'Invitation Code',
+        'desc_code_invitation' : 'Share this unique code to your friends to join.',
+        'no_transactions' : 'No transactions in this group yet.',
+        'group_balance' : 'Group Balance',
+        'fund_desc' : 'Allocate to Fund (optional)',
+        'note_placeholder' : 'Example: For coffee purchase',
+        'all_funds' : 'All Funds',
+        'no_fund' : 'No Fund',
+        'all_types' : 'All Types',
+        'all_members' : 'All Members',
+        'reset_filters' : 'Reset filter',
+        'riwayat_transaksi' : 'Transaction History',
+        'fund_income' : 'Fund Income',
+        'fund_expense' : 'Fund Expense',
+        'fund_balance' : 'Fund Balance',
+        'fund_target' : 'Fund Target',
+        'fund_progress' : 'Fund Progress',
+        'no_fund' : 'No funds yet.',
+        'activity_log_desc' : 'Member activity history',
+        'no_activities' : 'No activities yet.',
+        'showing_last_activities' : 'Showing last 20 activities',
+        'activity_log' : 'Activity Log',
+        'fund_name' : 'Fund / Financial Position Name',
+        'fund_name_placeholder' : 'Example: Event Fund, Operational Fund',
+        'add_fund' : 'Add Fund',
+        'edit_fund' : 'Edit Fund',
+        'delete_fund' : 'Delete Fund',
+        'confirm_delete_fund' : 'Are you sure you want to delete this fund? All transactions associated with this fund will be moved to "No Fund".',
+        
+        
+        #group report
+        'expense_by_member' : 'Expense by Member',
+        'expense_by_fund' : 'Expense by Fund',
+        'member_contribution_summary' : 'Member Contribution Summary',
+        'fund_summary' : 'Fund Summary',
+        'no_expense_data' : 'No expense data yet.',
+        'no_transaction_data' : 'No transaction data yet.',
+        
+        #edit transaksi grup
+        'edit_transaction' : 'Edit Group Transaction',
+        'edited_by' : 'Edited by',
+        'cancel' : 'Cancel',
+        'save_changes' : 'Save Changes',
+        
+        #filter bulan
+        'all_months' : 'All Months',
+        'january' : 'January',
+        'february' : 'February',
+        'march' : 'March',
+        'april' : 'April',
+        'may' : 'May',
+        'june' : 'June',
+        'july' : 'July',
+        'august' : 'August',
+        'september' : 'September',
+        'october' : 'October',
+        'november' : 'November',
+        'december' : 'December',
+        'all_years' : 'All Years',
 
         # Settings
         'settings_title'    : 'Account Settings',

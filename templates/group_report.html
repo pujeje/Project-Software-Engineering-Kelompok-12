@@ -16,7 +16,7 @@
 <body>
 <header>
     <h1>💰 FinTrack</h1>
-    <p>Laporan Keuangan — {{ group.name }}</p>
+    <p>{{ t['report_title'] }} — {{ group.name }}</p>
 </header>
 {% set active = 'report' %}
 <nav class="navbar">
@@ -47,15 +47,15 @@
     <!-- Ringkasan -->
     <div class="summary-grid">
         <div class="card summary-card income">
-            <p class="label">Total Pemasukan</p>
+            <p class="label">{{ t['total_income'] }}</p>
             <p class="amount">Rp {{ "{:,.0f}".format(total_income) }}</p>
         </div>
         <div class="card summary-card expense">
-            <p class="label">Total Pengeluaran</p>
+            <p class="label">{{ t['total_expense'] }}</p>
             <p class="amount">Rp {{ "{:,.0f}".format(total_expense) }}</p>
         </div>
         <div class="card summary-card balance">
-            <p class="label">Saldo Grup</p>
+            <p class="label">{{ t['group_balance'] }}</p>
             <p class="amount">Rp {{ "{:,.0f}".format(balance) }}</p>
         </div>
     </div>
@@ -65,21 +65,21 @@
 
         <!-- Pengeluaran per kategori -->
         <div class="card">
-            <h2>Pengeluaran per Kategori</h2>
+            <h2>{{ t['expense_by_cat'] }}</h2>
             {% if category_data %}
                 <canvas id="categoryChart"></canvas>
             {% else %}
-                <p class="empty-msg">Belum ada data pengeluaran.</p>
+                <p class="empty-msg">{{ t['no_expense_data'] }}</p>
             {% endif %}
         </div>
 
         <!-- Pemasukan vs Pengeluaran per bulan -->
         <div class="card">
-            <h2>Pemasukan vs Pengeluaran</h2>
+            <h2>{{ t['income_vs_expense'] }}</h2>
             {% if monthly_data %}
                 <canvas id="monthlyChart"></canvas>
             {% else %}
-                <p class="empty-msg">Belum ada data transaksi.</p>
+                <p class="empty-msg">{{ t['no_transaction_data'] }}</p>
             {% endif %}
         </div>
 
@@ -90,21 +90,21 @@
 
         <!-- Pengeluaran per anggota -->
         <div class="card">
-            <h2>Pengeluaran per Anggota</h2>
+            <h2>{{ t['expense_by_member'] }}</h2>
             {% if member_data %}
                 <canvas id="memberChart"></canvas>
             {% else %}
-                <p class="empty-msg">Belum ada data pengeluaran.</p>
+                <p class="empty-msg">{{ t['no_expense_data'] }}</p>
             {% endif %}
         </div>
 
         <!-- Pengeluaran per dana -->
         <div class="card">
-            <h2>Pengeluaran per Dana</h2>
+            <h2>{{ t['expense_by_fund'] }}</h2>
             {% if fund_data %}
                 <canvas id="fundChart"></canvas>
             {% else %}
-                <p class="empty-msg">Belum ada data pengeluaran.</p>
+                <p class="empty-msg">{{ t['no_expense_data'] }}</p>
             {% endif %}
         </div>
 
@@ -112,7 +112,7 @@
 
     <!-- Tabel kontribusi anggota -->
     <div class="card">
-        <h2>Ringkasan Kontribusi Anggota</h2>
+        <h2>{{ t['member_contribution_summary'] }}</h2>
         {% if member_data %}
         <table style="margin-top:16px;">
             <thead>
@@ -141,14 +141,14 @@
             </tbody>
         </table>
         {% else %}
-            <p class="empty-msg">Belum ada data.</p>
+            <p class="empty-msg">{{ t['no_expense_data'] }}</p>
         {% endif %}
     </div>
 
     <!-- Tabel pengeluaran per dana -->
     {% if fund_data %}
     <div class="card">
-        <h2>Ringkasan per Dana / Pos Keuangan</h2>
+        <h2>{{ t['fund_summary'] }}</h2>
         <table style="margin-top:16px;">
             <thead>
                 <tr>

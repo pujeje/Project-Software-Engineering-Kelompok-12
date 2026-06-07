@@ -67,6 +67,7 @@
 
     <div class="chart-grid">
 
+        
 
         <!-- Grafik Donut: Pengeluaran per Kategori -->
         <div class="card">
@@ -96,7 +97,9 @@
 </main>
 
 
+
 <script>
+    
     // Data dari Flask
     const categoryLabels = {{ category_data.keys() | list | tojson }};
     const categoryValues = {{ category_data.values() | list | tojson }};
@@ -139,12 +142,12 @@
                 labels: monthlyLabels,
                 datasets: [
                     {
-                        label: 'Pemasukan',
+                        label: {{ t['income'] | tojson }},
                         data: monthlyIncome,
                         backgroundColor: '#52b788'
                     },
                     {
-                        label: 'Pengeluaran',
+                        label: {{ t['expense'] | tojson }},
                         data: monthlyExpense,
                         backgroundColor: '#f87171'
                     }

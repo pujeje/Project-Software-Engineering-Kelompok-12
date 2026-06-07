@@ -3,27 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <script>
-(function(){
-    var t = localStorage.getItem('fintrack_theme') || 'light';
-    document.documentElement.setAttribute('data-theme', t);
-})();
-</script>
+        (function () {
+            var t = localStorage.getItem('fintrack_theme') || 'light';
+            document.documentElement.setAttribute('data-theme', t);
+        })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ group.name }} - FinTrack</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+
 <header>
     <h1>💰 FinTrack</h1>
-    <p>Mode Sharing — {{ group.name }}</p>
+    <p>{{ t['mode_sharing'] or 'Mode Sharing' }} — {{ group.name }}</p>
 </header>
+
 {% set active = 'detail' %}
 <nav class="navbar">
     <a href="/groups" class="nav-back">← {{ t['nav_sharing'] }}</a>
     <div class="nav-divider"></div>
-    <a href="/groups/{{ group.id }}" class="nav-link{{ ' active' if active == 'detail' else '' }}">📋 Transaksi</a>
-    <a href="/groups/{{ group.id }}/split" class="nav-link{{ ' active' if active == 'split' else '' }}">🧾 Split Tagihan</a>
-    <a href="/groups/{{ group.id }}/report" class="nav-link{{ ' active' if active == 'report' else '' }}">📊 Laporan</a>
+    <a href="/groups/{{ group.id }}"
+       class="nav-link{{ ' active' if active == 'detail' else '' }}">📋 {{ t['nav_sharing'] }}</a>
+    <a href="/groups/{{ group.id }}/split"
+       class="nav-link{{ ' active' if active == 'split' else '' }}">🧾 {{ t['split_bill'] }}</a>
+    <a href="/groups/{{ group.id }}/report"
+       class="nav-link{{ ' active' if active == 'report' else '' }}">📊 {{ t['report'] }}</a>
+
     <div class="nav-right">
         <div class="user-chip">
             <div class="user-avatar">
@@ -38,61 +44,70 @@
         <button class="theme-toggle" onclick="toggleTheme()">
             <span class="theme-icon">☀️</span>
         </button>
-        <a href="/logout" class="btn-logout">Logout</a>
+        <a href="/logout" class="btn-logout">{{ t['nav_logout'] }}</a>
     </div>
 </nav>
+
 <main>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}{% for category, message in messages %}
-            <div class="alert alert-{{ category }}">{{ message }}</div>
-        {% endfor %}{% endif %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
     {% endwith %}
 
-    <!-- Info Grup -->
+    <!-- ============ Info Grup ============ -->
     <div class="card" style="margin-bottom:20px;">
         <div style="display:flex; justify-content:space-between; align-items:center;">
             <div>
                 <h2 style="margin-bottom:4px;">{{ group.name }}</h2>
                 <p style="font-size:13px; color:#888;">
-                    Kode undangan: <strong style="letter-spacing:2px; color:#2d6a4f;">{{ group.code }}</strong>
-                    · Bagikan ke teman untuk bergabung
+                    {{ t['code_invitation'] }}:
+                    <strong style="letter-spacing:2px; color:#2d6a4f;">{{ group.code }}</strong>
+                    · {{ t['desc_code_invitation'] }}
                 </p>
             </div>
         </div>
         <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
             {% for m in group.members %}
-            <span style="background:#f0f4f8; padding:4px 12px; border-radius:20px; font-size:12px;">
-                {{ m.user.name }}
-                {% if m.role == 'admin' %}<span style="color:#2d6a4f;"> (admin)</span>{% endif %}
-            </span>
+                <span style="background:#f0f4f8; padding:4px 12px; border-radius:20px; font-size:12px;">
+                    {{ m.user.name }}
+                    {% if m.role == 'admin' %}<span style="color:#2d6a4f;"> (admin)</span>{% endif %}
+                </span>
             {% endfor %}
         </div>
     </div>
 
-    <!-- Ringkasan -->
+    <!-- ============ Ringkasan ============ -->
     <div class="summary-grid" style="margin-bottom:20px;">
         <div class="card summary-card income">
-            <p class="label">Total Pemasukan</p>
+            <p class="label">{{ t['total_income'] }}</p>
             <p class="amount">Rp {{ "{:,.0f}".format(total_income) }}</p>
         </div>
         <div class="card summary-card expense">
-            <p class="label">Total Pengeluaran</p>
+            <p class="label">{{ t['total_expense'] }}</p>
             <p class="amount">Rp {{ "{:,.0f}".format(total_expense) }}</p>
         </div>
         <div class="card summary-card balance">
-            <p class="label">Saldo Grup</p>
+            <p class="label">{{ t['group_balance'] }}</p>
             <p class="amount">Rp {{ "{:,.0f}".format(balance) }}</p>
         </div>
     </div>
 
-    
+    <!-- ============ Layout dua kolom: konten + sidebar log ============ -->
+    <div class="detail-layout"
+         style="display:grid; grid-template-columns:1fr 320px; gap:20px; align-items:start;">
+
+        <!-- ---------- Kolom kiri: konten utama ---------- -->
+        <div class="detail-main">
 
             <!-- Dana / Pos Keuangan -->
             <div class="card" style="margin-bottom:20px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                    <h2>💰 Dana / Pos Keuangan</h2>
-                    <button class="btn btn-secondary" onclick="toggleForm('fund-form')">+ Tambah Dana</button>
+                    <h2>💰 {{ t['funds'] or 'Dana' }}</h2>
+                    <button class="btn btn-secondary" onclick="toggleForm('fund-form')">+ {{ t['add_fund'] }}</button>
                 </div>
 
                 <!-- Form tambah dana -->
@@ -101,454 +116,404 @@
                     <form method="POST" action="/groups/{{ group.id }}/fund/add"
                           style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
                         <div class="form-group" style="margin:0; flex:1; min-width:140px;">
-                            <label>Nama Dana</label>
-                            <input type="text" name="fund_name" placeholder="Contoh: Dana Beras" required>
+                            <label>{{ t['fund_name'] }}</label>
+                            <input type="text" name="fund_name" placeholder="{{ t['fund_name_placeholder'] }}" required>
                         </div>
                         <div class="form-group" style="margin:0; flex:1; min-width:120px;">
-                            <label>Target (Rp)</label>
-                            <input type="number" name="fund_target" placeholder="Opsional" min="0">
+                            <label>{{ t['fund_target'] }}</label>
+                            <input type="number" name="fund_target" placeholder="{{ t['fund_target_placeholder'] }}" min="0">
                         </div>
                         <div class="form-group" style="margin:0; flex:2; min-width:160px;">
-                            <label>Deskripsi</label>
-                            <input type="text" name="fund_desc" placeholder="Opsional">
+                            <label>{{ t['fund_desc'] }}</label>
+                            <input type="text" name="fund_desc" placeholder="{{ t['fund_desc_placeholder'] }}">
                         </div>
-                        <button type="submit" class="btn btn-primary">Simpan</button>
+                        <button type="submit" class="btn btn-primary">{{ t['save'] }}</button>
                     </form>
                 </div>
 
                 {% if funds %}
-    <div style="display:grid; gap:10px;">
-        {% for fund in funds %}
-        {% set fund_expense = fund.transactions|selectattr('type','equalto','expense')|sum(attribute='amount') %}
-        {% set fund_income  = fund.transactions|selectattr('type','equalto','income')|sum(attribute='amount') %}
-        {% set fund_balance = fund_income - fund_expense %}
-        {% set pct = (fund_expense / fund.target * 100) if fund.target > 0 else 0 %}
+                    <div style="display:grid; gap:10px;">
+                        {% for fund in funds %}
+                            {% set fund_expense = fund.transactions|selectattr('type','equalto','expense')|sum(attribute='amount') %}
+                            {% set fund_income  = fund.transactions|selectattr('type','equalto','income')|sum(attribute='amount') %}
+                            {% set fund_balance = fund_income - fund_expense %}
+                            {% set pct = (fund_expense / fund.target * 100) if fund.target > 0 else 0 %}
 
-        <div style="padding:14px; border:0.5px solid var(--color-border-tertiary); border-radius:10px;">
+                            <div style="padding:14px; border:0.5px solid var(--color-border-tertiary); border-radius:10px;">
 
-            <!-- Header dana -->
-            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                <div>
-                    <strong style="font-size:14px;">{{ fund.name }}</strong>
-                    {% if fund.description %}
-                        <p style="font-size:12px; color:#888; margin:2px 0;">{{ fund.description }}</p>
-                    {% endif %}
-                </div>
-                <div style="display:flex; gap:6px;">
-                    <button class="btn btn-edit"
-                            onclick="toggleForm('edit-fund-{{ fund.id }}')">Edit</button>
-                    <a href="/groups/{{ group.id }}/fund/delete/{{ fund.id }}"
-                       class="btn btn-danger"
-                       onclick="return confirm('Yakin hapus dana ini?')">Hapus</a>
-                </div>
-            </div>
+                                <!-- Header dana -->
+                                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                                    <div>
+                                        <strong style="font-size:14px;">{{ fund.name }}</strong>
+                                        {% if fund.description %}
+                                            <p style="font-size:12px; color:#888; margin:2px 0;">{{ fund.description }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <div style="display:flex; gap:6px;">
+                                        <button class="btn btn-edit"
+                                                onclick="toggleForm('edit-fund-{{ fund.id }}')">✏️ {{ t['edit'] }}</button>
+                                        <a href="/groups/{{ group.id }}/fund/delete/{{ fund.id }}"
+                                           class="btn btn-danger"
+                                           onclick="return confirm('{{ t['confirm_delete'] }}')">🗑 {{ t['delete'] }}</a>
+                                    </div>
+                                </div>
 
-            <!-- Info saldo dana -->
-            <div style="display:flex; gap:16px; margin:10px 0; font-size:13px;">
-                <span style="color:#2d6a4f;">
-                    Masuk: Rp {{ "{:,.0f}".format(fund_income) }}
-                </span>
-                <span style="color:#dc2626;">
-                    Keluar: Rp {{ "{:,.0f}".format(fund_expense) }}
-                </span>
-                <span style="font-weight:500;">
-                    Saldo: Rp {{ "{:,.0f}".format(fund_balance) }}
-                </span>
-                {% if fund.target > 0 %}
-                <span style="color:#888;">
-                    Target: Rp {{ "{:,.0f}".format(fund.target) }}
-                </span>
+                                <!-- Info saldo dana -->
+                                <div style="display:flex; gap:16px; margin:10px 0; font-size:13px; flex-wrap:wrap;">
+                                    <span style="color:#2d6a4f;">
+                                        {{ t['fund_income'] }}: Rp {{ "{:,.0f}".format(fund_income) }}
+                                    </span>
+                                    <span style="color:#dc2626;">
+                                        {{ t['fund_expense'] }}: Rp {{ "{:,.0f}".format(fund_expense) }}
+                                    </span>
+                                    <span style="font-weight:500;">
+                                        {{ t['fund_balance'] }}: Rp {{ "{:,.0f}".format(fund_balance) }}
+                                    </span>
+                                    {% if fund.target > 0 %}
+                                        <span style="color:#888;">
+                                            {{ t['fund_target'] }}: Rp {{ "{:,.0f}".format(fund.target) }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Progress bar -->
+                                {% if fund.target > 0 %}
+                                    <div class="progress-bar-bg">
+                                        <div class="progress-bar-fill {{ 'fill-danger' if pct >= 100 else 'fill-safe' }}"
+                                             style="width:{{ [pct, 100]|min }}%"></div>
+                                    </div>
+                                    <p style="font-size:11px; color:#888; margin-top:4px;">
+                                        {{ t['fund_progress'] }}: {{ "{:.0f}".format(pct) }}% {{ t['of_target'] or 'dari target' }}
+                                    </p>
+                                {% endif %}
+
+                                <!-- Form edit dana (tersembunyi) -->
+                                <div id="edit-fund-{{ fund.id }}" style="display:none; margin-top:12px;
+                                     padding:12px; background:#f9fafb; border-radius:8px;">
+                                    <form method="POST"
+                                          action="/groups/{{ group.id }}/fund/edit/{{ fund.id }}"
+                                          style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+                                        <div class="form-group" style="margin:0; flex:1; min-width:130px;">
+                                            <label>{{ t['fund_name'] }}</label>
+                                            <input type="text" name="fund_name" value="{{ fund.name }}" required>
+                                        </div>
+                                        <div class="form-group" style="margin:0; flex:1; min-width:110px;">
+                                            <label>{{ t['fund_target'] }}</label>
+                                            <input type="number" name="fund_target" value="{{ fund.target | int }}" min="0">
+                                        </div>
+                                        <div class="form-group" style="margin:0; flex:2; min-width:150px;">
+                                            <label>{{ t['fund_desc'] }}</label>
+                                            <input type="text" name="fund_desc" value="{{ fund.description or '' }}">
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">{{ t['save'] }}</button>
+                                    </form>
+                                </div>
+
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="empty-msg">{{ t['no_funds'] or 'Belum ada dana' }}</p>
                 {% endif %}
-            </div>
-
-            <!-- Progress bar -->
-            {% if fund.target > 0 %}
-            <div class="progress-bar-bg">
-                <div class="progress-bar-fill {{ 'fill-danger' if pct >= 100 else 'fill-safe' }}"
-                     style="width:{{ [pct, 100]|min }}%"></div>
-            </div>
-            <p style="font-size:11px; color:#888; margin-top:4px;">
-                {{ "{:.0f}".format(pct) }}% dari target
-            </p>
-            {% endif %}
-
-            <!-- Form edit dana (tersembunyi) -->
-            <div id="edit-fund-{{ fund.id }}" style="display:none; margin-top:12px;
-                 padding:12px; background:#f9fafb; border-radius:8px;">
-                <form method="POST"
-                      action="/groups/{{ group.id }}/fund/edit/{{ fund.id }}"
-                      style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
-                    <div class="form-group" style="margin:0; flex:1; min-width:130px;">
-                        <label>Nama Dana</label>
-                        <input type="text" name="fund_name"
-                               value="{{ fund.name }}" required>
-                    </div>
-                    <div class="form-group" style="margin:0; flex:1; min-width:110px;">
-                        <label>Target (Rp)</label>
-                        <input type="number" name="fund_target"
-                               value="{{ fund.target | int }}" min="0">
-                    </div>
-                    <div class="form-group" style="margin:0; flex:2; min-width:150px;">
-                        <label>Deskripsi</label>
-                        <input type="text" name="fund_desc"
-                               value="{{ fund.description or '' }}">
-                    </div>
-                    <button type="submit" class="btn btn-primary">Simpan</button>
-                </form>
-            </div>
-
-        </div>
-        {% endfor %}
-    </div>
-{% else %}
-    <p class="empty-msg">Belum ada dana. Tambahkan pos keuangan dulu!</p>
-{% endif %}
+            </div><!-- /card Dana -->
 
             <!-- Tambah Transaksi -->
             <div class="card" style="margin-bottom:20px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                    <h2>➕ Tambah Transaksi</h2>
-                    <button class="btn btn-secondary" onclick="toggleForm('trans-form')">Tambah</button>
-                  </div>
-                  <a href="/groups/{{ group.id }}/scan" class="btn btn-secondary">
-        📷 Scan Struk
-    </a>
-   
+                    <h2>{{ t['add_transaction'] }}</h2>
+                    <div style="display:flex; gap:8px;">
+                        <a href="/groups/{{ group.id }}/scan" class="btn btn-secondary">📷 {{ t['scan_receipt'] }}</a>
+                        <button class="btn btn-secondary" onclick="toggleForm('trans-form')">➕ {{ t['add'] }}</button>
+                    </div>
+                </div>
+
                 <div id="trans-form" style="display:none;">
                     <form method="POST" action="/groups/{{ group.id }}/add">
                         <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
                             <div class="form-group">
-                                <label>Judul</label>
-                                <input type="text" name="title" placeholder="Beli beras" required>
+                                <label>{{ t['transaction_title'] }}</label>
+                                <input type="text" name="title" placeholder="{{ t['transaction_title_placeholder'] }}" required>
                             </div>
                             <div class="form-group">
-                                <label>Jumlah (Rp)</label>
-                                <input type="number" name="amount" placeholder="50000" min="0" required>
+                                <label>{{ t['amount'] }} (Rp)</label>
+                                <input type="number" name="amount" placeholder="{{ t['amount_placeholder'] }}" min="0" required>
                             </div>
                             <div class="form-group">
-                                <label>Tipe</label>
+                                <label>{{ t['type'] }}</label>
                                 <select name="type">
-                                    <option value="expense">Pengeluaran</option>
-                                    <option value="income">Pemasukan</option>
+                                    <option value="expense">{{ t['expense'] }}</option>
+                                    <option value="income">{{ t['income'] }}</option>
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label>Kategori</label>
+                                <label>{{ t['category'] }}</label>
                                 <select name="category">
                                     {% for cat in ['Makanan','Transport','Belanja','Hiburan','Kesehatan','Pendidikan','Lainnya'] %}
-                                    <option value="{{ cat }}">{{ cat }}</option>
+                                        <option value="{{ cat }}">{{ cat }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label>Tanggal</label>
+                                <label>{{ t['date'] }}</label>
                                 <input type="date" name="date" value="{{ now.strftime('%Y-%m-%d') }}">
                             </div>
                             <div class="form-group">
-                                <label>Masuk ke Dana (opsional)</label>
+                                <label>{{ t['fund_name'] }} ({{ t['optional'] or 'opsional' }})</label>
                                 <select name="fund_id">
-                                    <option value="">— Tidak ada —</option>
+                                    <option value="">— {{ t['no_fund'] }} —</option>
                                     {% for fund in funds %}
-                                    <option value="{{ fund.id }}">{{ fund.name }}</option>
+                                        <option value="{{ fund.id }}">{{ fund.name }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label>Catatan</label>
-                            <input type="text" name="note" placeholder="Opsional">
+                            <label>{{ t['note'] }}</label>
+                            <input type="text" name="note" placeholder="{{ t['note_placeholder'] }}">
                         </div>
-                        <button type="submit" class="btn btn-primary">Simpan Transaksi</button>
+                        <button type="submit" class="btn btn-primary">{{ t['save_transaction'] }}</button>
                     </form>
                 </div>
-            </div>
-
-            <!-- Filter -->
-<div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
-    <select id="filter-fund" onchange="filterTable()"
-            style="padding:7px 12px; border:0.5px solid #d1d5db;
-                   border-radius:8px; font-size:13px;">
-        <option value="">Semua Dana</option>
-        {% for fund in funds %}
-        <option value="{{ fund.name }}">{{ fund.name }}</option>
-        {% endfor %}
-        <option value="—">Tanpa Dana</option>
-    </select>
-
-    <select id="filter-type" onchange="filterTable()"
-            style="padding:7px 12px; border:0.5px solid #d1d5db;
-                   border-radius:8px; font-size:13px;">
-        <option value="">Semua Tipe</option>
-        <option value="Pemasukan">Pemasukan</option>
-        <option value="Pengeluaran">Pengeluaran</option>
-    </select>
-
-    <select id="filter-member" onchange="filterTable()"
-            style="padding:7px 12px; border:0.5px solid #d1d5db;
-                   border-radius:8px; font-size:13px;">
-        <option value="">Semua Anggota</option>
-        {% for m in group.members %}
-        <option value="{{ m.user.name }}">{{ m.user.name }}</option>
-        {% endfor %}
-    </select>
-
-    <button onclick="resetFilter()"
-            class="btn btn-secondary" style="font-size:13px;">
-        Reset Filter
-    </button>
-</div>
+            </div><!-- /card Tambah Transaksi -->
 
             <!-- Riwayat Transaksi -->
             <div class="card">
-                <h2>📋 Riwayat Transaksi Grup</h2>
-                <!-- Filter bulan -->
-<div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; align-items:center;">
-    <select id="filter-month" onchange="filterByMonth()"
-            style="padding:7px 12px; border:1.5px solid #C8D9E6;
-                   border-radius:99px; font-size:13px; background:#F5EFEB;
-                   color:#2F4156; cursor:pointer;">
-        <option value="">📅 Semua Bulan</option>
-        <option value="01">Januari</option>
-        <option value="02">Februari</option>
-        <option value="03">Maret</option>
-        <option value="04">April</option>
-        <option value="05">Mei</option>
-        <option value="06">Juni</option>
-        <option value="07">Juli</option>
-        <option value="08">Agustus</option>
-        <option value="09">September</option>
-        <option value="10">Oktober</option>
-        <option value="11">November</option>
-        <option value="12">Desember</option>
-    </select>
+                <h2>📋 {{ t['riwayat_transaksi'] }}</h2>
 
-    <select id="filter-year" onchange="filterByMonth()"
-            style="padding:7px 12px; border:1.5px solid #C8D9E6;
-                   border-radius:99px; font-size:13px; background:#F5EFEB;
-                   color:#2F4156; cursor:pointer;">
-        <option value="">Semua Tahun</option>
-        {% set years = [] %}
-        {% for trx in transactions %}
-            {% if trx.date.strftime('%Y') not in years %}
-                {% set _ = years.append(trx.date.strftime('%Y')) %}
-            {% endif %}
-        {% endfor %}
-        {% for year in years|sort(reverse=True) %}
-            <option value="{{ year }}">{{ year }}</option>
-        {% endfor %}
-    </select>
-
-    <span id="filter-count" style="font-size:13px; color:#567C8D;"></span>
-
-    <button onclick="resetMonthFilter()"
-            style="padding:7px 14px; border:1.5px solid #C8D9E6;
-                   border-radius:99px; font-size:13px; background:#F5EFEB;
-                   color:#567C8D; cursor:pointer;">
-        Reset
-    </button>
-</div>
-                {% if transactions %}
-                <table id="trans-table" style="margin-top:16px;">
-                    <thead>
-                        <tr>
-                            <th>Tanggal</th>
-                            <th>Judul</th>
-                            <th>Oleh</th>
-                            <th>Dana</th>
-                            <th>Tipe</th>
-                            <th>Jumlah</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for t in transactions %}
-                        <tr data-date="{{ t.date.strftime('%m-%Y') }}">
-                            <td>{{ t.date.strftime('%d/%m/%Y') }}</td>
-                            <td>{{ t.title }}</td>
-                            <td style="font-size:12px; color:#666;">{{ t.user.name }}</td>
-                            <td style="font-size:12px; color:#666;">{{ t.fund.name if t.fund else '—' }}</td>
-                            <td>
-                                <span class="badge {{ 'badge-income' if t.type == 'income' else 'badge-expense' }}">
-                                    {{ 'Pemasukan' if t.type == 'income' else 'Pengeluaran' }}
-                                </span>
-                            </td>
-                            <td class="{{ 'text-income' if t.type == 'income' else 'text-expense' }}"  style="white-space:nowrap;">
-                                Rp {{ "{:,.0f}".format(t.amount) }}
-                            </td>
-                            <td>
-                                <a href="/groups/{{ group.id }}/delete/{{ t.id }}"
-                                   class="btn btn-danger"
-                                   onclick="return confirm('Yakin hapus?')">Hapus</a>
-                            </td>
-                            <td style="display:flex; gap:6px;">
-                                <a href="/groups/{{ group.id }}/edit/{{ t.id }}"
-                                    class="btn btn-edit">Edit</a>
-                                <a href="/groups/{{ group.id }}/delete/{{ t.id }}"
-                                    class="btn btn-danger"
-                                    onclick="return confirm('Yakin hapus?')">Hapus</a>
-                            </td>
-                        </tr>
+                <!-- Filter: dana / tipe / anggota -->
+                <div style="display:flex; gap:10px; margin:16px 0; flex-wrap:wrap;">
+                    <select id="filter-fund" onchange="applyFilters()"
+                            style="padding:7px 12px; border:0.5px solid #d1d5db; border-radius:8px; font-size:13px;">
+                        <option value="">{{ t['all_funds'] }}</option>
+                        {% for fund in funds %}
+                            <option value="{{ fund.name }}">{{ fund.name }}</option>
                         {% endfor %}
-                    </tbody>
-                </table>
+                        <option value="—">{{ t['no_fund'] }}</option>
+                    </select>
+
+                    <select id="filter-type" onchange="applyFilters()"
+                            style="padding:7px 12px; border:0.5px solid #d1d5db; border-radius:8px; font-size:13px;">
+                        <option value="">{{ t['all_types'] }}</option>
+                        <option value="income">{{ t['income'] }}</option>
+                        <option value="expense">{{ t['expense'] }}</option>
+                    </select>
+
+                    <select id="filter-member" onchange="applyFilters()"
+                            style="padding:7px 12px; border:0.5px solid #d1d5db; border-radius:8px; font-size:13px;">
+                        <option value="">{{ t['all_members'] }}</option>
+                        {% for m in group.members %}
+                            <option value="{{ m.user.name }}">{{ m.user.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Filter: bulan / tahun -->
+                <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; align-items:center;">
+                    <select id="filter-month" onchange="applyFilters()"
+                            style="padding:7px 12px; border:1.5px solid #C8D9E6; border-radius:99px;
+                                   font-size:13px; background:#F5EFEB; color:#2F4156; cursor:pointer;">
+                        <option value="">📅 {{ t['all_months'] }}</option>
+                        <option value="01">{{ t['january'] }}</option>
+                        <option value="02">{{ t['february'] }}</option>
+                        <option value="03">{{ t['march'] }}</option>
+                        <option value="04">{{ t['april'] }}</option>
+                        <option value="05">{{ t['may'] }}</option>
+                        <option value="06">{{ t['june'] }}</option>
+                        <option value="07">{{ t['july'] }}</option>
+                        <option value="08">{{ t['august'] }}</option>
+                        <option value="09">{{ t['september'] }}</option>
+                        <option value="10">{{ t['october'] }}</option>
+                        <option value="11">{{ t['november'] }}</option>
+                        <option value="12">{{ t['december'] }}</option>
+                    </select>
+
+                    <select id="filter-year" onchange="applyFilters()"
+                            style="padding:7px 12px; border:1.5px solid #C8D9E6; border-radius:99px;
+                                   font-size:13px; background:#F5EFEB; color:#2F4156; cursor:pointer;">
+                        <option value="">{{ t['all_years'] }}</option>
+                        {% set years = [] %}
+                        {% for trx in transactions %}
+                            {% if trx.date.strftime('%Y') not in years %}
+                                {% set _ = years.append(trx.date.strftime('%Y')) %}
+                            {% endif %}
+                        {% endfor %}
+                        {% for year in years|sort(reverse=True) %}
+                            <option value="{{ year }}">{{ year }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <span id="filter-count" style="font-size:13px; color:#567C8D;"></span>
+
+                    <button onclick="resetFilters()"
+                            style="padding:7px 14px; border:1.5px solid #C8D9E6; border-radius:99px;
+                                   font-size:13px; background:#F5EFEB; color:#567C8D; cursor:pointer;">
+                        {{ t['reset_filters'] }}
+                    </button>
+                </div>
+
+                {% if transactions %}
+                    <table id="trans-table" style="margin-top:16px;">
+                        <thead>
+                            <tr>
+                                <th>{{ t['date'] }}</th>
+                                <th>{{ t['title'] }}</th>
+                                <th>{{ t['member'] or 'Anggota' }}</th>
+                                <th>{{ t['category'] }}</th>
+                                <th>{{ t['type'] }}</th>
+                                <th>{{ t['amount'] }}</th>
+                                <th>{{ t['actions'] }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for trx in transactions %}
+                                <tr data-date="{{ trx.date.strftime('%m-%Y') }}"
+                                    data-type="{{ trx.type }}"
+                                    data-category="{{ trx.category.name if trx.category else '—' }}"
+                                    data-member="{{ trx.user.name }}">
+                                    <td>{{ trx.date.strftime('%d/%m/%Y') }}</td>
+                                    <td>{{ trx.title }}</td>
+                                    <td style="font-size:12px; color:#666;">{{ trx.user.name }}</td>
+                                    <td style="font-size:12px; color:#666;">{{ trx.category.name if trx.category else '—' }}</td>
+                                    <td>
+                                        <span class="badge {{ 'badge-income' if trx.type == 'income' else 'badge-expense' }}">
+                                            {{ t['income'] if trx.type == 'income' else t['expense'] }}
+                                        </span>
+                                    </td>
+                                    <td class="{{ 'text-income' if trx.type == 'income' else 'text-expense' }}"
+                                        style="white-space:nowrap;">
+                                        Rp {{ "{:,.0f}".format(trx.amount) }}
+                                    </td>
+                                    <td>
+                                        <div style="display:flex; gap:6px;">
+                                            <a href="/groups/{{ group.id }}/edit/{{ trx.id }}"
+                                               class="btn btn-edit">✏️ {{ t['edit'] }}</a>
+                                            <a href="/groups/{{ group.id }}/delete/{{ trx.id }}"
+                                               class="btn btn-danger"
+                                               onclick="return confirm('{{ t['confirm_delete'] }}')">🗑 {{ t['delete'] }}</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 {% else %}
-                    <p class="empty-msg">Belum ada transaksi di grup ini.</p>
+                    <p class="empty-msg">{{ t['no_transactions'] }}</p>
                 {% endif %}
-            </div>
+            </div><!-- /card Riwayat -->
 
-        </div>
+        </div><!-- /detail-main -->
 
-        <!-- Activity Log -->
-        <div>
+        <!-- ---------- Kolom kanan: Activity Log ---------- -->
+        <div class="detail-side">
             <div class="card" style="position:sticky; top:20px;">
-                <h2>📜 Activity Log</h2>
+                <h2>📜 {{ t['activity_log'] }}</h2>
                 <p style="font-size:12px; color:#888; margin:4px 0 16px;">
-                    Riwayat aktivitas anggota
+                    {{ t['activity_log_desc'] }}
                 </p>
 
-            {% if logs %}
-            <div style="display:flex; flex-direction:column; gap:8px;
-                    max-height:500px; overflow-y:auto;">
-            {% for log in logs %}
-            <div style="padding:10px 12px; background:#f9fafb;
-                        border-radius:8px; border-left:3px solid
-                        {% if 'menghapus' in log.action %}#dc2626
-                        {% elif 'mengedit' in log.action %}#f59e0b
-                        {% elif 'membuat' in log.action or 'menambahkan' in log.action %}#2d6a4f
-                        {% else %}#6b7280{% endif %};">
-                <div style="display:flex; justify-content:space-between;
-                            align-items:flex-start; gap:8px;">
-                    <div>
-                        <p style="font-size:13px; font-weight:500;
-                                  margin-bottom:2px;">
-                            {{ log.user.name }}
-                        </p>
-                        <p style="font-size:12px; color:#555;">
-                            {{ log.action }}
-                        </p>
+                {% if logs %}
+                    <div style="display:flex; flex-direction:column; gap:8px; max-height:500px; overflow-y:auto;">
+                        {% for log in logs %}
+                            <div style="padding:10px 12px; background:#f9fafb; border-radius:8px; border-left:3px solid
+                                {% if 'menghapus' in log.action %}#dc2626
+                                {% elif 'mengedit' in log.action %}#f59e0b
+                                {% elif 'membuat' in log.action or 'menambahkan' in log.action %}#2d6a4f
+                                {% else %}#6b7280{% endif %};">
+                                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+                                    <div>
+                                        <p style="font-size:13px; font-weight:500; margin-bottom:2px;">{{ log.user.name }}</p>
+                                        <p style="font-size:12px; color:#555;">{{ log.action }}</p>
+                                    </div>
+                                    <span style="font-size:10px; color:#aaa; white-space:nowrap; margin-top:2px;">
+                                        {{ log.created_at.strftime('%d/%m %H:%M') }}
+                                    </span>
+                                </div>
+                            </div>
+                        {% endfor %}
                     </div>
-                    <span style="font-size:10px; color:#aaa;
-                                 white-space:nowrap; margin-top:2px;">
-                        {{ log.created_at.strftime('%d/%m %H:%M') }}
-                    </span>
-                </div>
+                    <p style="font-size:11px; color:#aaa; text-align:center; margin-top:12px;">
+                        {{ t['showing_last_activities'] }}
+                    </p>
+                {% else %}
+                    <p class="empty-msg">{{ t['no_activities'] }}</p>
+                {% endif %}
             </div>
-            {% endfor %}
-        </div>
+        </div><!-- /detail-side -->
 
-        <p style="font-size:11px; color:#aaa; text-align:center;
-                  margin-top:12px;">
-            Menampilkan 20 aktivitas terakhir
-        </p>
-    {% else %}
-        <p class="empty-msg">Belum ada aktivitas.</p>
-    {% endif %}
-</div>
-        </div>
+    </div><!-- /detail-layout -->
 
-    </div>
 </main>
 
 <script>
-function toggleForm(id) {
-    const el = document.getElementById(id);
-    el.style.display = el.style.display === 'none' ? 'block' : 'none';
-}
-</script>
+    // Label untuk counter filter (mengikuti bahasa aktif)
+    var TXT_OF = "{{ t['of'] or 'dari' }}";
+    var TXT_TX = "{{ t['transactions'] or 'transaksi' }}";
 
-<script>
-function filterTable() {
-    const fund   = document.getElementById('filter-fund').value.toLowerCase();
-    const type   = document.getElementById('filter-type').value.toLowerCase();
-    const member = document.getElementById('filter-member').value.toLowerCase();
-    const rows   = document.querySelectorAll('#trans-table tbody tr');
+    function toggleForm(id) {
+        var el = document.getElementById(id);
+        el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
 
-    rows.forEach(row => {
-        const cells      = row.querySelectorAll('td');
-        const rowFund    = cells[3].textContent.trim().toLowerCase();
-        const rowType    = cells[4].textContent.trim().toLowerCase();
-        const rowMember  = cells[2].textContent.trim().toLowerCase();
+    // Satu fungsi filter untuk semua kriteria (dana, tipe, anggota, bulan, tahun)
+    function applyFilters() {
+        var fund   = (document.getElementById('filter-fund').value   || '').toLowerCase();
+        var type   = (document.getElementById('filter-type').value   || '').toLowerCase();
+        var member = (document.getElementById('filter-member').value || '').toLowerCase();
+        var month  = document.getElementById('filter-month').value || '';
+        var year   = document.getElementById('filter-year').value  || '';
 
-        const matchFund   = !fund   || rowFund   === fund;
-        const matchType   = !type   || rowType.includes(type);
-        const matchMember = !member || rowMember === member;
+        var rows = document.querySelectorAll('#trans-table tbody tr');
+        var shown = 0;
 
-        row.style.display = matchFund && matchType && matchMember ? '' : 'none';
-    });
-}
+        rows.forEach(function (row) {
+            var rFund   = (row.dataset.fund   || '').toLowerCase();
+            var rType   = (row.dataset.type   || '').toLowerCase();
+            var rMember = (row.dataset.member || '').toLowerCase();
+            var d       = row.dataset.date || '';      // format MM-YYYY
+            var rMonth  = d.split('-')[0] || '';
+            var rYear   = d.split('-')[1] || '';
 
-function resetFilter() {
-    document.getElementById('filter-fund').value   = '';
-    document.getElementById('filter-type').value   = '';
-    document.getElementById('filter-member').value = '';
-    filterTable();
-}
-</script>
+            var ok = (!fund   || rFund   === fund)
+                  && (!type   || rType   === type)
+                  && (!member || rMember === member)
+                  && (!month  || rMonth  === month)
+                  && (!year   || rYear   === year);
 
-<script>
-function toggleTheme() {
-    var html = document.documentElement;
-    var isDark = html.getAttribute('data-theme') === 'dark';
-    var next = isDark ? 'light' : 'dark';
-    html.setAttribute('data-theme', next);
-    localStorage.setItem('fintrack_theme', next);
-    // Update ikon langsung setelah toggle
-    document.querySelectorAll('.theme-icon').forEach(function(el) {
-        el.textContent = next === 'dark' ? '🌙' : '☀️';
-    });
-}
+            row.style.display = ok ? '' : 'none';
+            if (ok) shown++;
+        });
 
-// Set ikon yang benar saat halaman pertama dibuka
-var savedTheme = localStorage.getItem('fintrack_theme') || 'light';
-document.documentElement.setAttribute('data-theme', savedTheme);
-document.querySelectorAll('.theme-icon').forEach(function(el) {
-    el.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
-});
+        var anyFilter = fund || type || member || month || year;
+        var countEl = document.getElementById('filter-count');
+        countEl.textContent = anyFilter ? (shown + ' ' + TXT_OF + ' ' + rows.length + ' ' + TXT_TX) : '';
+    }
+
+    function resetFilters() {
+        ['filter-fund', 'filter-type', 'filter-member', 'filter-month', 'filter-year']
+            .forEach(function (id) { document.getElementById(id).value = ''; });
+        applyFilters();
+    }
+
+    // Tema
+    function toggleTheme() {
+        var html = document.documentElement;
+        var next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', next);
+        localStorage.setItem('fintrack_theme', next);
+        document.querySelectorAll('.theme-icon').forEach(function (el) {
+            el.textContent = next === 'dark' ? '🌙' : '☀️';
+        });
+    }
+
+    // Set ikon tema sesuai pilihan tersimpan saat halaman dibuka
+    (function () {
+        var saved = localStorage.getItem('fintrack_theme') || 'light';
+        document.documentElement.setAttribute('data-theme', saved);
+        document.querySelectorAll('.theme-icon').forEach(function (el) {
+            el.textContent = saved === 'dark' ? '🌙' : '☀️';
+        });
+    })();
 </script>
 
 </body>
-
-<script>
-function filterByMonth() {
-    var month = document.getElementById('filter-month').value;
-    var year  = document.getElementById('filter-year').value;
-    var rows  = document.querySelectorAll('#trans-table tbody tr');
-    var count = 0;
-
-    rows.forEach(function(row) {
-        var date    = row.getAttribute('data-date'); // format MM-YYYY
-        var rowMonth = date ? date.split('-')[0] : '';
-        var rowYear  = date ? date.split('-')[1] : '';
-
-        var matchMonth = !month || rowMonth === month;
-        var matchYear  = !year  || rowYear  === year;
-
-        if (matchMonth && matchYear) {
-            row.style.display = '';
-            count++;
-        } else {
-            row.style.display = 'none';
-        }
-    });
-
-    // Update counter
-    var total = rows.length;
-    var countEl = document.getElementById('filter-count');
-    if (month || year) {
-        countEl.textContent = count + ' dari ' + total + ' transaksi';
-    } else {
-        countEl.textContent = '';
-    }
-}
-
-function resetMonthFilter() {
-    document.getElementById('filter-month').value = '';
-    document.getElementById('filter-year').value  = '';
-    document.querySelectorAll('#trans-table tbody tr').forEach(function(row) {
-        row.style.display = '';
-    });
-    document.getElementById('filter-count').textContent = '';
-}
-</script>
-
 </html>
