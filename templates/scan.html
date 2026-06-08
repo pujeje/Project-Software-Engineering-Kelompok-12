@@ -9,7 +9,7 @@
 })();
 </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scan Struk - FinTrack</title>
+    <title>{{ t['scan_receipt'] }} - FinTrack</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -71,7 +71,7 @@
         <!-- Hasil Scan -->
         {% if result %}
         <div style="margin-top:32px; border-top:1px solid #e5e7eb; padding-top:24px;">
-            <h3 style="margin-bottom:16px; color:#2d6a4f;">✅ Hasil Scan — Konfirmasi Data</h3>
+            <h3 style="margin-bottom:16px; color:#2d6a4f;">✅ {{ t['scan_result'] }}</h3>
 
             <form method="POST" action="/add">
                 <div class="form-group">
@@ -113,8 +113,8 @@
                 </div>
 
                 <div class="form-actions">
-                    <a href="/scan" class="btn btn-secondary">Scan Ulang</a>
-                    <button type="submit" class="btn btn-primary">Simpan Transaksi</button>
+                    <a href="/scan" class="btn btn-secondary">{{ t['scan_again'] }}</a>
+                    <button type="submit" class="btn btn-primary">{{ t['save_transaction'] }}</button>
                 </div>
             </form>
         </div>

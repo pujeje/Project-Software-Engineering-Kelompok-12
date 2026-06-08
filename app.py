@@ -23,6 +23,12 @@ import pytesseract
 
 # pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
+_tess = shutil.which('tesseract')
+if _tess:
+    pytesseract.pytesseract.tesseract_cmd = _tess
+elif os.path.exists(r'C:\Program Files\Tesseract-OCR\tesseract.exe'):
+    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+
 
 # ============================================================
 # APP CONFIG

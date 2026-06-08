@@ -3,43 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tambah Transaksi Grup</title>
+  <title>{{ t['add_group_transaction'] }} - FinTrack</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
 <div class="container">
-  <h2>Tambah Transaksi Grup</h2>
+  <h2>{{ t['add_group_transaction'] }}</h2>
 
   <!-- Pilih mode -->
   <form method="POST" enctype="multipart/form-data">
     <div class="form-group">
-      <label>Pilih Mode</label>
+      <label>{{ t['select_mode'] }}</label>
       <select name="mode" onchange="toggleMode(this.value)">
-        <option value="manual">Manual</option>
-        <option value="scan">Scan Struk</option>
+        <option value="manual">{{ t['manual'] }}</option>
+        <option value="scan">{{ t['scan'] }}</option>
       </select>
     </div>
 
     <!-- Form manual -->
     <div id="manual-form">
       <div class="form-group">
-        <label>Judul</label>
+        <label>{{ t['title'] }}</label>
         <input type="text" name="title" required>
       </div>
       <div class="form-group">
-        <label>Kategori</label>
+        <label>{{ t['category'] }}</label>
         <input type="text" name="category" required>
       </div>
       <div class="form-group">
-        <label>Tipe</label>
+        <label>{{ t['type'] }}</label>
         <select name="type">
-          <option value="income">Income</option>
-          <option value="expense">Expense</option>
+          <option value="income">{{ t['income'] }}</option>
+          <option value="expense">{{ t['expense'] }}</option>
         </select>
       </div>
       <div class="form-group">
-        <label>Jumlah</label>
+        <label>{{ t['amount'] }}</label>
         <input type="number" name="amount" required>
       </div>
     </div>
@@ -47,12 +47,12 @@
     <!-- Form scan -->
     <div id="scan-form" style="display:none;">
       <div class="form-group">
-        <label>Upload Struk</label>
+        <label>{{ t['upload_receipt'] }}</label>
         <input type="file" name="receipt" accept="image/*">
       </div>
     </div>
 
-    <button type="submit" class="btn btn-primary">Tambah</button>
+    <button type="submit" class="btn btn-primary">{{ t['add_transaction'] }}</button>
   </form>
 </div>
 

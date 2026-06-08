@@ -74,6 +74,13 @@ TRANSLATIONS = {
         'rescan': 'Scan Ulang',
         'save_transaction': 'Simpan Transaksi',
         'detected_items': 'Item yang terdeteksi',
+        'add_group_transaction': 'Tambah Transaksi Grup',
+        'select_mode': 'Pilih Mode',
+        'personal': 'Pribadi',
+        'group': 'Grup',
+            'select_group': 'Pilih Grup',
+            'no_groups': 'Belum ada grup. Buat atau gabung grup dulu!',
+            'add_to_group': 'Tambahkan ke Grup',
 
         # Laporan
         'report_title': 'Laporan Keuangan',
