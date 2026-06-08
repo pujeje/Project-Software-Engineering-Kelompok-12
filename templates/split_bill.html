@@ -9,21 +9,21 @@
 })();
 </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Split Tagihan - {{ group.name }}</title>
+    <title>{{ t['split_bill'] }} - {{ group.name }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 <header>
     <h1>💰 FinTrack</h1>
-    <p>Mode Sharing — {{ group.name }}</p>
+    <p>{{ t['nav_sharing'] }} — {{ group.name }}</p>
 </header>
 {% set active = 'split' %}
 <nav class="navbar">
     <a href="/groups" class="nav-back">← {{ t['nav_sharing'] }}</a>
     <div class="nav-divider"></div>
-    <a href="/groups/{{ group.id }}" class="nav-link{{ ' active' if active == 'detail' else '' }}">📋 Transaksi</a>
-    <a href="/groups/{{ group.id }}/split" class="nav-link{{ ' active' if active == 'split' else '' }}">🧾 Split Tagihan</a>
-    <a href="/groups/{{ group.id }}/report" class="nav-link{{ ' active' if active == 'report' else '' }}">📊 Laporan</a>
+    <a href="/groups/{{ group.id }}" class="nav-link{{ ' active' if active == 'detail' else '' }}">📋 {{ t['nav_transaction'] }}</a>
+    <a href="/groups/{{ group.id }}/split" class="nav-link{{ ' active' if active == 'split' else '' }}">🧾 {{ t['split_bill'] }}</a>
+    <a href="/groups/{{ group.id }}/report" class="nav-link{{ ' active' if active == 'report' else '' }}">📊 {{ t['nav_report'] }}</a>
     <div class="nav-right">
         <div class="user-chip">
             <div class="user-avatar">
@@ -38,7 +38,7 @@
         <button class="theme-toggle" onclick="toggleTheme()">
             <span class="theme-icon">☀️</span>
         </button>
-        <a href="/logout" class="btn-logout">Logout</a>
+        <a href="/logout" class="btn-logout">{{ t['logout'] }}</a>
     </div>
 </nav>
 <main>
@@ -53,25 +53,25 @@
 
         <!-- Form Buat Split -->
         <div class="card">
-            <h2>➕ Buat Split Tagihan</h2>
+            <h2>➕ {{ t['create_split'] }}</h2>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
     <a href="/groups/{{ group.id }}/split/scan" class="btn btn-secondary">
-        📷 Scan Struk
+        📷 {{ t['scan_receipt'] }}
     </a>
 </div>
             <form method="POST" action="/groups/{{ group.id }}/split/create"
                   id="split-form" style="margin-top:16px;">
 
                 <div class="form-group">
-                    <label>Judul Tagihan</label>
+                    <label>{{ t['bill_title'] }}</label>
                     <input type="text" name="title"
-                           placeholder="Contoh: Makan malam bareng" required>
+                           placeholder="{{ t['bill_title_placeholder'] }}" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Total Tagihan (Rp)</label>
+                    <label>{{ t['total_bill'] }}</label>
                     <input type="number" name="total_amount" id="total-amount"
-                           placeholder="Contoh: 150000" min="0"
+                           placeholder="{{ t['total_bill_placeholder'] }}" min="0"
                            oninput="updateEqual()" required>
                 </div>
 
@@ -98,21 +98,21 @@
             </div>
 
                 <div class="form-group">
-                    <label>Catatan (opsional)</label>
-                    <input type="text" name="note" placeholder="Opsional">
+                    <label>{{ t['note'] }} (opsional)</label>
+                    <input type="text" name="note" placeholder="{{ t['note_placeholder'] }}">
                 </div>
 
                 <div class="form-group">
-                    <label>Cara Bagi</label>
+                    <label>{{ t['split_method'] }}</label>
                     <select name="split_type" id="split-type"
                             onchange="toggleSplitType()">
-                        <option value="equal">Rata (dibagi sama)</option>
-                        <option value="custom">Custom (tiap orang beda)</option>
+                        <option value="equal">{{ t['equal_split'] }}</option>
+                        <option value="custom">{{ t['custom_split'] }}</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label>Pilih Anggota</label>
+                    <label>{{ t['select_members'] }}</label>
                     <div style="display:flex; flex-direction:column; gap:8px; margin-top:4px;">
                         {% for m in members %}
                         <div style="display:flex; align-items:center;
@@ -135,7 +135,7 @@
                             <div class="custom-input" style="display:none;">
                                 <input type="number"
                                        name="custom_{{ m.user_id }}"
-                                       placeholder="Jumlah (Rp)"
+                                       placeholder="{{ t['custom_amount_placeholder'] }}"
                                        min="0"
                                        style="width:130px; padding:6px 10px;
                                               border:0.5px solid #d1d5db;
@@ -153,7 +153,7 @@
                 </div>
 
                 <button type="submit" class="btn btn-primary" style="width:100%;">
-                    Buat Split Tagihan
+                    {{ t['create_split'] }}
                 </button>
             </form>
         </div>
@@ -161,7 +161,7 @@
         <!-- Daftar Split Bills -->
         <div>
             <div class="card">
-                <h2>🧾 Daftar Tagihan</h2>
+                <h2>🧾 {{ t['split_bills'] }}</h2>
 
                 {% if bills %}
                     <div style="display:flex; flex-direction:column;
@@ -186,12 +186,12 @@
                                         {{ bill.title }}
                                     </p>
                                     <p style="font-size:12px; color:#888;">
-                                        Dibuat oleh {{ bill.creator.name }} ·
+                                        {{ t['created_by'] }} {{ bill.creator.name }} ·
                                         {{ bill.created_at.strftime('%d/%m/%Y') }}
                                     </p>
                                     {% if bill.note %}
                                     <p style="font-size:12px; color:#666; margin-top:2px;">
-                                        {{ bill.note }}
+                                        {{ t['note'] }}: {{ bill.note }}
                                     </p>
                                     {% endif %}
                                 </div>
@@ -201,9 +201,9 @@
                                         Rp {{ "{:,.0f}".format(bill.total_amount) }}
                                     </p>
                                     {% if all_paid %}
-                                    <span class="badge badge-income" style="white-space:nowrap;">✅ Lunas</span>
+                                    <span class="badge badge-income" style="white-space:nowrap;">✅ {{ t['paid'] }}</span>
                                     {% else %}
-                                    <span class="badge badge-expense" style="white-space:nowrap;">⏳ Belum lunas</span>
+                                    <span class="badge badge-expense" style="white-space:nowrap;">⏳ {{ t['not_paid'] }}</span>
                                     {% endif %}
                                 </div>
                             </div>
@@ -217,8 +217,8 @@
                                          style="width:{{ pct_paid }}%"></div>
                                 </div>
                                 <p style="font-size:11px; color:#888; margin-bottom:8px;">
-                                    Rp {{ "{:,.0f}".format(total_paid) }} dari
-                                    Rp {{ "{:,.0f}".format(bill.total_amount) }} sudah dibayar
+                                    Rp {{ "{:,.0f}".format(total_paid) }} {{ t['from'] }}
+                                    Rp {{ "{:,.0f}".format(bill.total_amount) }} {{ t['paid'] }} ({{ "{:.0f}".format(pct_paid) }}%)
                                 </p>
                             </div>
                             {% endif %}
@@ -238,10 +238,10 @@
                                         </span>
                                         {% if detail.is_paid %}
                                         <span class="badge badge-income"
-                                              style="font-size:11px;" >✅ Lunas</span>
+                                              style="font-size:11px;" >✅ {{ t['paid'] }}</span>
                                         {% else %}
                                         <span class="badge badge-expense"
-                                              style="font-size:11px;">Belum</span>
+                                              style="font-size:11px;">{{ t['not_paid'] }}</span>
                                         {% endif %}
                                     </div>
                                     <div style="display:flex; align-items:center; gap:8px;">
@@ -253,7 +253,7 @@
                                            class="btn btn-primary"
                                            style="font-size:12px; padding:4px 10px; "
                                            onclick="return confirm('Tandai sebagai lunas?')">
-                                            Tandai Lunas
+                                            {{ t['mark_paid'] }}
                                         </a>
                                         {% endif %}
                                         {% if detail.paid_at %}
@@ -272,8 +272,9 @@
                                 <a href="/groups/{{ group.id }}/split/{{ bill.id }}/delete"
                                    class="btn btn-danger"
                                    style="font-size:12px;"
-                                   onclick="return confirm('Yakin hapus split tagihan ini?')">
-                                    Hapus Tagihan
+                                   onclick="return confirm('{{ t['confirm_delete_bill'] }}')">
+                                     {{ t['delete_bill'] }}
+                                    {{ t['delete_bill'] }}
                                 </a>
                             </div>
                             {% endif %}
@@ -282,7 +283,7 @@
                         {% endfor %}
                     </div>
                 {% else %}
-                    <p class="empty-msg">Belum ada split tagihan.</p>
+                    <p class="empty-msg">{{ t['no_split_bills'] }}</p>
                 {% endif %}
             </div>
         </div>

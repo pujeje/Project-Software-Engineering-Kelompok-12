@@ -9,7 +9,7 @@
 })();
 </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan - {{ group.name }}</title>
+    <title>{{ t['report_title'] }} - {{ group.name }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 </head>
@@ -22,9 +22,9 @@
 <nav class="navbar">
     <a href="/groups" class="nav-back">← {{ t['nav_sharing'] }}</a>
     <div class="nav-divider"></div>
-    <a href="/groups/{{ group.id }}" class="nav-link{{ ' active' if active == 'detail' else '' }}">📋 Transaksi</a>
-    <a href="/groups/{{ group.id }}/split" class="nav-link{{ ' active' if active == 'split' else '' }}">🧾 Split Tagihan</a>
-    <a href="/groups/{{ group.id }}/report" class="nav-link{{ ' active' if active == 'report' else '' }}">📊 Laporan</a>
+    <a href="/groups/{{ group.id }}" class="nav-link{{ ' active' if active == 'detail' else '' }}">📋 {{ t['nav_transaction'] }}</a>
+    <a href="/groups/{{ group.id }}/split" class="nav-link{{ ' active' if active == 'split' else '' }}">🧾 {{ t['split_bill'] }}</a>
+    <a href="/groups/{{ group.id }}/report" class="nav-link{{ ' active' if active == 'report' else '' }}">📊 {{ t['nav_report'] }}</a>
     <div class="nav-right">
         <div class="user-chip">
             <div class="user-avatar">
@@ -117,10 +117,10 @@
         <table style="margin-top:16px;">
             <thead>
                 <tr>
-                    <th>Anggota</th>
-                    <th>Total Pengeluaran</th>
-                    <th>Persentase</th>
-                    <th>Porsi</th>
+                    <th>{{ t['member'] }}</th>
+                    <th>{{ t['total_expense'] }}</th>
+                    <th>{{ t['percentage'] }}</th>
+                    <th>{{ t['share'] }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -152,10 +152,10 @@
         <table style="margin-top:16px;">
             <thead>
                 <tr>
-                    <th>Dana</th>
-                    <th>Total Pengeluaran</th>
-                    <th>Persentase</th>
-                    <th>Porsi</th>
+                    <th>{{ t['fund'] }}</th>
+                    <th>{{ t['total_expense'] }}</th>
+                    <th>{{ t['percentage'] }}</th>
+                    <th>{{ t['share'] }}</th>
                 </tr>
             </thead>
             <tbody>
