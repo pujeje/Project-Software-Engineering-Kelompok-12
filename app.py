@@ -24,16 +24,11 @@ import requests
 
 # pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
-_tess_paths = [
-    shutil.which('tesseract'),
-    '/usr/bin/tesseract',
-    '/usr/local/bin/tesseract',
-    r'C:\Program Files\Tesseract-OCR\tesseract.exe',
-]
-for _path in _tess_paths:
-    if _path and os.path.exists(_path):
-        pytesseract.pytesseract.tesseract_cmd = _path
-        break
+_tess = shutil.which('tesseract')
+if _tess:
+    pytesseract.pytesseract.tesseract_cmd = _tess
+elif os.path.exists(r'C:\Program Files\Tesseract-OCR\tesseract.exe'):
+    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 
 # ============================================================
@@ -474,7 +469,6 @@ def report():
 # SCAN STRUK
 # ============================================================
 
-
 @app.route('/scan', methods=['GET', 'POST'])
 @login_required
 def scan():
@@ -484,24 +478,13 @@ def scan():
             flash('Pilih file dulu!', 'danger')
             return redirect(url_for('scan'))
 
-        # Kirim file ke OCR.space API
-        response = requests.post(
-            'https://api.ocr.space/parse/image',
-            files={'file': file},
-            data={'apikey': API_KEY, 'OCREngine': 2}  # bisa coba engine 1/2/3
-        )
-        result_json = response.json()
-
-        # Ambil teks hasil OCR
-        text = result_json['ParsedResults'][0]['ParsedText']
-
-        # Kamu bisa parsing teks sesuai kebutuhan (misalnya ambil title, amount, note)
+        title, amount, note = _ocr_receipt(file.stream)
         result = {
-            'title'   : text.splitlines()[0] if text else "Tidak ada judul",
-            'amount'  : "0",   # sementara, bisa kamu parsing dari text
+            'title'   : title,
+            'amount'  : amount,
             'category': 'Belanja',
             'date'    : datetime.utcnow().strftime('%Y-%m-%d'),
-            'note'    : text
+            'note'    : note,
         }
         return render_template('scan.html', result=result)
 

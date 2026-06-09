@@ -44,25 +44,25 @@
         <form method="POST" action="/edit/{{ transaction.id }}">
 
             <div class="form-group">
-                <label>Judul Transaksi</label>
+                <label>{{ t['form_title'] }}</label>
                 <input type="text" name="title"
                        value="{{ transaction.title }}" required>
             </div>
 
             <div class="form-group">
-                <label>Jumlah (Rp)</label>
+                <label>{{ t['form_amount'] }}</label>
                 <input type="number" name="amount"
                        value="{{ transaction.amount | int }}" min="0" required>
             </div>
 
             <div class="form-group">
-                <label>Tanggal</label>
+                <label>{{ t['form_date'] }}</label>
                 <input type="date" name="date"
                        value="{{ transaction.date.strftime('%Y-%m-%d') }}">
             </div>
 
             <div class="form-group">
-                <label>Tipe</label>
+                <label>{{ t['form_type'] }}</label>
                 <select name="type">
                     <option value="expense" {{ 'selected' if transaction.type == 'expense' }}>Pengeluaran</option>
                     <option value="income"  {{ 'selected' if transaction.type == 'income'  }}>Pemasukan</option>
@@ -70,7 +70,7 @@
             </div>
 
             <div class="form-group">
-                <label>Kategori</label>
+                <label>{{ t['form_category'] }}</label>
                 <select name="category">
                     {% set categories = ['Makanan','Transport','Belanja','Hiburan','Kesehatan','Pendidikan','Gaji','Lainnya'] %}
                     {% for cat in categories %}
@@ -80,13 +80,13 @@
             </div>
 
             <div class="form-group">
-                <label>Catatan (opsional)</label>
+                <label>{{ t['form_note'] }}</label>
                 <textarea name="note">{{ transaction.note }}</textarea>
             </div>
 
             <div class="form-actions">
-                <a href="/" class="btn btn-secondary">Batal</a>
-                <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                <a href="/" class="btn btn-secondary">{{ t['btn_cancel'] }}</a>
+                <button type="submit" class="btn btn-primary">{{ t['btn_save'] }}</button>
             </div>
 
         </form>
