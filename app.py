@@ -17,9 +17,10 @@ import os
 import re
 import csv
 import io
-
+import shutil 
 from PIL import Image
 import pytesseract
+import requests
 
 # pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
@@ -40,6 +41,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY']                   = 'fintrack-secret'
 app.config['UPLOAD_FOLDER']                = 'static/uploads'
 app.config['MAX_CONTENT_LENGTH']           = 2 * 1024 * 1024  # 2 MB
+API_KEY = "K83846642988957"
 
 os.makedirs('static/uploads', exist_ok=True)
 
@@ -467,6 +469,7 @@ def report():
 # SCAN STRUK
 # ============================================================
 
+
 @app.route('/scan', methods=['GET', 'POST'])
 @login_required
 def scan():
@@ -476,13 +479,24 @@ def scan():
             flash('Pilih file dulu!', 'danger')
             return redirect(url_for('scan'))
 
-        title, amount, note = _ocr_receipt(file.stream)
+        # Kirim file ke OCR.space API
+        response = requests.post(
+            'https://api.ocr.space/parse/image',
+            files={'file': file},
+            data={'apikey': API_KEY, 'OCREngine': 2}  # bisa coba engine 1/2/3
+        )
+        result_json = response.json()
+
+        # Ambil teks hasil OCR
+        text = result_json['ParsedResults'][0]['ParsedText']
+
+        # Kamu bisa parsing teks sesuai kebutuhan (misalnya ambil title, amount, note)
         result = {
-            'title'   : title,
-            'amount'  : amount,
+            'title'   : text.splitlines()[0] if text else "Tidak ada judul",
+            'amount'  : "0",   # sementara, bisa kamu parsing dari text
             'category': 'Belanja',
             'date'    : datetime.utcnow().strftime('%Y-%m-%d'),
-            'note'    : note,
+            'note'    : text
         }
         return render_template('scan.html', result=result)
 
