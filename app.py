@@ -24,11 +24,16 @@ import requests
 
 # pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
-_tess = shutil.which('tesseract')
-if _tess:
-    pytesseract.pytesseract.tesseract_cmd = _tess
-elif os.path.exists(r'C:\Program Files\Tesseract-OCR\tesseract.exe'):
-    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+_tess_paths = [
+    shutil.which('tesseract'),
+    '/usr/bin/tesseract',
+    '/usr/local/bin/tesseract',
+    r'C:\Program Files\Tesseract-OCR\tesseract.exe',
+]
+for _path in _tess_paths:
+    if _path and os.path.exists(_path):
+        pytesseract.pytesseract.tesseract_cmd = _path
+        break
 
 
 # ============================================================
